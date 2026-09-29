@@ -9,10 +9,13 @@
   import * as m from "$lib/features/i18n/messages.ts";
   import { toVipVeteranRingTone } from "$lib/features/vip-veteran/toVipVeteranRingTone.ts";
   import { useVipVeteran } from "$lib/features/vip-veteran/stores/useVipVeteran.ts";
+  import { useVipVeteranMoments } from "$lib/features/vip-veteran/stores/useVipVeteranMoments.ts";
   import RenderFor from "$lib/guards/RenderFor.svelte";
   import LeaderboardPill from "$lib/sections/profile/leaderboard/LeaderboardPill.svelte";
   import MatchPill from "$lib/sections/profile/components/MatchPill.svelte";
+  import VipStreakAnniversaryDialog from "$lib/sections/profile/vip-streak/VipStreakAnniversaryDialog.svelte";
   import VipStreakBadge from "$lib/sections/profile/vip-streak/VipStreakBadge.svelte";
+  import VipStreakGraceBanner from "$lib/sections/profile/vip-streak/VipStreakGraceBanner.svelte";
   import ProfileAbout from "$lib/sections/profile/components/ProfileAbout.svelte";
   import { toDisplayableName } from "$lib/utils/profile/toDisplayableName";
   import { fromRune } from "$lib/utils/store/fromRune.svelte";
@@ -40,6 +43,14 @@
 
   const { veteran } = useVipVeteran(fromRune(() => slug));
   const shownVeteran = $derived(profile.isVip ? $veteran : null);
+  const { celebration, graceDaysLeft } = useVipVeteranMoments({
+    veteran,
+    isMe: fromRune(() => $isMe),
+  });
+  const promotion = $derived(
+    $celebration?.kind === "promotion" ? $celebration : null,
+  );
+  let isAnniversaryDismissed = $state(false);
 
   const { isEnabled } = useFeatureFlag();
   const leaderboardEnabled = isEnabled(FeatureFlag.Leaderboard);
@@ -52,6 +63,10 @@
 </script>
 
 <div class="trakt-profile-page-banner">
+  {#if $veteran && $graceDaysLeft != null}
+    <VipStreakGraceBanner years={$veteran.years} daysLeft={$graceDaysLeft} />
+  {/if}
+
   <div class="profile-identity">
     <ProfileImage
       isEditable={$isMe}
@@ -73,7 +88,7 @@
         </RenderFor>
         {#if !isBlocked && !isPending}
           {#if shownVeteran}
-            <VipStreakBadge veteran={shownVeteran} />
+            <VipStreakBadge veteran={shownVeteran} {promotion} />
           {:else}
             <RenderFor audience="all" device={["tablet-lg", "desktop"]}>
               {#if profile.isVip}
@@ -122,6 +137,13 @@
     <ProfileAbout {profile} {slug} />
   {/if}
 </div>
+
+{#if $veteran && $celebration?.kind === "anniversary" && !isAnniversaryDismissed}
+  <VipStreakAnniversaryDialog
+    veteran={$veteran}
+    onClose={() => (isAnniversaryDismissed = true)}
+  />
+{/if}
 
 <style lang="scss">
   @use "$style/scss/mixins/index" as *;
