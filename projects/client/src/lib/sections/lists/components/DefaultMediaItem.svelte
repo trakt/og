@@ -28,10 +28,12 @@
     tag: externalTag,
     coverTag: externalCoverTag,
     canDeemphasize,
+    popupActions: externalPopupActions,
     ...rest
-  }: MediaCardProps<MediaInputDefault> & {
+  }: DistributiveOmit<MediaCardProps<MediaInputDefault>, "popupActions"> & {
     canDeemphasize?: boolean;
     sortTag?: Snippet;
+    popupActions?: Snippet | null;
   } = $props();
 
   const { isWatched, isPartiallyWatched } = $derived(
@@ -102,8 +104,8 @@
 {/snippet}
 
 {#snippet popupActions()}
-  {#if rest.popupActions}
-    {@render rest.popupActions()}
+  {#if externalPopupActions}
+    {@render externalPopupActions()}
   {:else}
     <DefaultMediaPopupActions
       {media}
@@ -131,7 +133,7 @@
       contextualTag={mode === "mixed" ? contextualTag : undefined}
       indicators={indicatorTags}
       {...rest}
-      {popupActions}
+      popupActions={externalPopupActions === null ? undefined : popupActions}
     />
   </trakt-default-media-item>
 </MediaSwipe>
