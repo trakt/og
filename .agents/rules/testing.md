@@ -6,7 +6,7 @@
 - Test pure functions and data mappers first: business logic and transformations.
 - Test behavior, not implementation. Verify what the code does, not how.
 - Mock HTTP with MSW once API calls exist. Never hit apiz from a test.
-- Run one file while iterating: `deno task test src/lib/foo.spec.ts`. Run `deno task ci` before opening a PR.
+- Run one file while iterating: `deno task test src/lib/foo.spec.ts`. Open a draft PR early, run `deno task ci` while working, and pass it before landing.
 
 ## Describe / It conventions
 
