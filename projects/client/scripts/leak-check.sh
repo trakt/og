@@ -16,7 +16,7 @@ import sys
 # Split literal names so the guard can scan its own source without an exemption.
 patterns = [
     r'\.' + r'rb:[0-9]', 'trakt-' + 'rails', 'rails-' + 'web', 'og-rails-' + 'throwaway',
-    'og-' + 'legacy', 'trakt-' + 'workers/', 'v3/' + 'workers',
+    'trakt/' + 'og-' + 'legacy', 'og-' + 'legacy', 'trakt-' + 'workers/', 'v3/' + 'workers',
     r'app/(controllers|views|models|helpers)/', 'OFFICIAL_TRAKT_' + 'APP_UIDS',
     'plan/' + 'inventory', r'route-map\.md', '/' + 'Users/', 'scratch' + 'pad',
     'plan/' + r'(overlay\.md|README\.md)', r'\.' + r'rb\b', 'trakt-' + 'workers',
@@ -29,12 +29,6 @@ exception_file = scripts / 'leak-check.allowlist'
 exceptions = set(exception_file.read_text().splitlines())
 if any('\t' not in entry or not entry.split('\t', 1)[0] for entry in exceptions):
     sys.exit('leak-check: exact-line exceptions must use path, tab, complete line')
-paths = set((scripts / 'leak-check.paths').read_text().splitlines())
-# These are the only files allowed to name the separate issue repository.
-expected = {str(scripts / name) for name in ('land.sh', 'unblock.sh')}
-if paths != expected:
-    sys.exit('leak-check: path exceptions must contain only the two landing scripts')
-private_repo = 'og-' + 'legacy'
 hits = 0
 
 def scan(name, content):
@@ -44,8 +38,6 @@ def scan(name, content):
             continue
         for match in guard.finditer(line):
             if f'{name}\t{line}' in exceptions:
-                continue
-            if name in paths and match.group() == private_repo:
                 continue
             print(f'{name}:{number}:{match.group()}')
             hits += 1
