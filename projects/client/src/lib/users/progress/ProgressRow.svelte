@@ -1,7 +1,7 @@
 <!--
   One show on the progress page: the poster, then the title, the tick bar and what's been watched (or collected),
   then the seasons to open under it. Opening the seasons reads the show's catalog once (`onexpand`) and opens the
-  panel under the row: the up-next banner and the season strips (`ProgressPanel`). The panel sits in its own grid row,
+  panel under the row: the up-next banner, the season picker and its episode tiles (`ProgressPanel`). The panel sits in its own grid row,
   so opening it moves nothing above it. On your own profile the title
   has rewatch and drop (or hide, on Library) icons; the row recomputes from the overlay as they save, so a drop or a
   hide takes it off the page and a rewatch resets it. A dropped show (the Dropped tab) says when you dropped it and
@@ -143,8 +143,8 @@ function toggle(opened: boolean) {
   </div>
 
   <div class="panel" id="progress-panel-{row.id}" hidden={!open}>
-    {#if open && row.strips}
-      <ProgressPanel strips={row.strips} upNext={row.upNext} last={row.last} watchedTime={row.watchedTime}
+    {#if open && row.picker}
+      <ProgressPanel picker={row.picker} upNext={row.upNext} last={row.last} watchedTime={row.watchedTime}
         leftTime={row.leftTime} {type} />
     {/if}
   </div>

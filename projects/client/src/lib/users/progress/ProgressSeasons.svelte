@@ -1,7 +1,7 @@
 <!--
   The seasons band under a progress row: "+ view details" opens the row's panel (the up-next banner and the season
-  strips, `ProgressPanel`). OG had "view seasons" and "view all"; the strips show every episode at once, so one toggle
-  does both. OG's toggles were spans; this is a button that says whether it's open. The row reads the show's catalog
+  picker, `ProgressPanel`). OG had "view seasons" and "view all"; the picker shows any season's episodes, so one
+  toggle does both. OG's toggles were spans; this is a button that says whether it's open. The row reads the show's catalog
   as the panel opens, so the band says it's loading until the seasons are in.
 -->
 <script lang="ts">

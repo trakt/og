@@ -12,7 +12,7 @@ import { imageUrl } from '../../utils/imageUrl.ts';
 import { relativeDate } from '../../utils/relativeDate.ts';
 import type { ProgressItem } from './ProgressItem.ts';
 import type { ProgressType } from './progressTypes.ts';
-import { type ProgressStrips, toProgressStrips } from './toProgressStrips.ts';
+import { type SeasonPicker, toSeasonPicker } from './toSeasonPicker.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
 
@@ -60,8 +60,8 @@ export type ProgressRow = {
   readonly droppedOn?: string;
   /** "July 2, 2024" while the show is being rewatched. */
   readonly rewatchingSince?: string;
-  /** Once the catalog is in: the season strips, and the next episode unless everything's done (Watched only). */
-  readonly strips?: ProgressStrips;
+  /** Once the catalog is in: the season picker, and the next episode unless everything's done (Watched only). */
+  readonly picker?: SeasonPicker;
   readonly upNext?: ProgressUpNext;
 };
 
@@ -161,12 +161,13 @@ export function toProgressRow(params: ToProgressRowParams): ProgressRow {
     rewatchingSince: type !== 'library' && item.resetAt
       ? formatDate(item.resetAt, { ...datePreferences, format: 'LL' })
       : undefined,
-    strips: detail &&
-      toProgressStrips({
+    picker: detail &&
+      toSeasonPicker({
         seasons,
         next: detail.next && { season: detail.next.season, number: detail.next.number },
         showHref: href,
         type,
+        datePreferences,
       }),
     upNext: type === 'library' ? undefined : toUpNext(params),
   };

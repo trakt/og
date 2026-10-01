@@ -87,6 +87,7 @@ const samples: readonly Sample[] = [
   },
 ];
 
+const ANNOUNCED = '2027-01-14T20:00:00.000Z';
 const at = (season: number, number: number) => new Date(Date.UTC(2026, 8, 1 + season, 20, number)).toISOString();
 const episodeId = (sample: Sample, season: number, number: number) => sample.id * 100 + season * 20 + number;
 const NOW = Date.parse('2026-09-30T20:00:00.000Z');
@@ -127,7 +128,8 @@ function toCatalog(sample: Sample): ShowCatalog {
           title: `Episode ${e + 1}`,
           overview: OVERVIEW,
           type: sample.types?.[`${s + 1}x${e + 1}`] ?? 'standard',
-          firstAired: e < aired ? at(s + 1, e + 1) : undefined,
+          // The first announced episode has a date, the rest are TBA.
+          firstAired: e < aired ? at(s + 1, e + 1) : e === aired ? ANNOUNCED : undefined,
           runtime: sample.runtime,
           rating: 8.1,
         })),

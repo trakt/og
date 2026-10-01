@@ -3,7 +3,7 @@
   opens the episode page), an "Up next" kicker with its tags, runtime and rating, the number and title, a one-line
   overview (the full text in its tooltip), then Check in and Mark watched. Mark watched uses your "watch" default
   date (now, release or unknown) and falls back to now; the overlay patch moves the row on to the next episode.
-  Hovering or focusing the banner outlines its cell in the strips (`linked`), and the cell does the same back.
+  Hovering or focusing the banner outlines its episode tile (`linked`), and the tile does the same back.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -24,7 +24,7 @@ import type { ProgressUpNext } from './toProgressRow.ts';
 
 interface Props {
   next: ProgressUpNext;
-  /** Its strip cell is hovered or focused. */
+  /** Its episode tile is hovered or focused. */
   linked?: boolean;
   /** The banner is hovered or focused, or stops being. */
   onlink?: (on: boolean) => void;
