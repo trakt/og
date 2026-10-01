@@ -1,6 +1,4 @@
 {
-  "nodeModulesDir": "manual",
-  "minimumDependencyAge": 1440,
   "tasks": {
     "install": "deno install --frozen",
     "format": "deno fmt && deno lint --fix && deno task lint --fix",
@@ -13,9 +11,6 @@
     "unblock": "bash scripts/unblock.sh",
     "deploy": "bash scripts/deploy.sh"
   },
-  "unstable": [
-    "fmt-component"
-  ],
   "fmt": {
     "singleQuote": true,
     "indentWidth": 2,
@@ -32,8 +27,5 @@
       ".svelte-kit",
       "node_modules"
     ]
-  },
-  "allowScripts": [
-    "npm:workerd@1.20260926.1"
-  ]
+  }
 }
