@@ -15,5 +15,6 @@ export default defineConfig({
   test: {
     include: ['src/**/*.spec.ts', 'scripts/**/*.spec.ts'],
     passWithNoTests: true,
+    setupFiles: ['src/test/memoryStorage.ts'],
   },
 });
