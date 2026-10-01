@@ -1,7 +1,7 @@
 <!--
-  The seasons band under a progress row: "+ view seasons" and "+ view all" open the row's panel (the up-next banner
-  and the season strips, `ProgressPanel`). The strips show every episode at once, so both toggles open the same
-  panel. OG's toggles were spans; these are buttons that say whether they're open. The row reads the show's catalog
+  The seasons band under a progress row: "+ view details" opens the row's panel (the up-next banner and the season
+  strips, `ProgressPanel`). OG had "view seasons" and "view all"; the strips show every episode at once, so one toggle
+  does both. OG's toggles were spans; this is a button that says whether it's open. The row reads the show's catalog
   as the panel opens, so the band says it's loading until the seasons are in.
 -->
 <script lang="ts">
@@ -30,8 +30,7 @@ function setOpen(next: boolean) {
 
 <div class="seasons">
   <button type="button" class="toggle" aria-expanded={open} aria-controls={controls}
-    onclick={() => setOpen(!open)}><Icon svg={open ? minus : plus} />view seasons</button>
-  <button type="button" class="toggle" onclick={() => !open && setOpen(true)}><Icon svg={plus} />view all</button>
+    onclick={() => setOpen(!open)}><Icon svg={open ? minus : plus} />view details</button>
 
   {#if open && loading}<p class="loading" role="status">Loading seasons…</p>{/if}
 </div>
