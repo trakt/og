@@ -5,6 +5,7 @@ export type CatalogEpisode = {
   readonly number: number;
   readonly numberAbs?: number;
   readonly title?: string;
+  readonly overview?: string;
   /** `series_premiere`, `mid_season_finale` and so on. */
   readonly type?: string;
   readonly firstAired?: string;

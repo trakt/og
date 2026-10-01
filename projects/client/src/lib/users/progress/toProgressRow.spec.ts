@@ -32,8 +32,8 @@ describe('toProgressRow', () => {
         watchedTime: '~10h 11m',
         leftTime: '~7h 3m',
         last: { relative: 'a month ago', date: 'Sep 3, 2026 1:04 PM' },
-        seasons: [],
-        next: undefined,
+        strips: undefined,
+        upNext: undefined,
       });
       expect(collapsed('Breaking Bad').last).not.toHaveProperty('number');
     });
@@ -58,58 +58,44 @@ describe('toProgressRow', () => {
       });
     });
 
-    it('should map each season with its summary and episode chips', () => {
-      const [first, second] = expanded('Breaking Bad').seasons;
+    it('should strip each season, announced episodes included', () => {
+      const { strips } = expanded('Severance');
 
-      expect(first).toMatchObject({ title: 'Season 1', percent: 100, summary: '7/7 episodes — 9 plays (7h 3m)' });
-      expect(second).toMatchObject({
-        title: 'Season 2',
-        href: '/shows/breaking-bad/seasons/2',
-        percent: 30,
-        summary: '4/13 episodes — 4 plays (3h 8m) — 9 remaining (7h 3m)',
+      expect(strips?.columns).toBe(10);
+      expect(strips?.seasons.map(({ label, count }) => [label, count])).toEqual([
+        ['S1', '9/9'],
+        ['S2', '10/10'],
+        ['S3', '3 announced'],
+      ]);
+      expect(strips?.seasons.at(2)?.cells.at(0)).toEqual({
+        code: '3x01',
+        href: '/shows/severance/seasons/3/episodes/1',
+        state: 'not-aired',
+        label: '3x01 "Episode 1", not aired',
       });
-      expect(second?.episodes.at(0)).toEqual({
-        key: '2x01',
-        label: '2x01',
-        href: '/shows/breaking-bad/seasons/2/episodes/1',
-        done: true,
-        plays: { text: '1 play', detail: '47m' },
-        activity: { prefix: 'Last watched on', date: 'Sep 3, 2026 1:01 PM' },
-      });
-      expect(second?.episodes.at(-1)).toMatchObject({ done: false });
-      expect(second?.episodes.at(-1)).not.toHaveProperty('plays');
-      expect(second?.episodes.at(-1)).not.toHaveProperty('activity');
     });
 
-    it('should add a custom season title after its number', () => {
-      expect(expanded('The Wire').seasons.at(0)?.title).toBe('Season 1: The Streets');
-    });
-
-    it('should card the next episode with its premiere and air date', () => {
-      expect(expanded('Game of Thrones').next).toEqual({
-        href: '/shows/game-of-thrones/seasons/3/episodes/1',
-        title: 'Episode 1',
+    it('should banner the next episode with its premiere, air date, runtime and overview', () => {
+      expect(expanded('Game of Thrones').upNext).toMatchObject({
         number: '3x01',
+        title: 'Episode 1',
+        href: '/shows/game-of-thrones/seasons/3/episodes/1',
         image: undefined,
         tags: [
           { text: 'Season Premiere', kind: 'season-premiere' },
-          { text: 'Sep 4, 2026 1:01 PM', kind: 'primary' },
+          { text: 'Sep 4, 2026', kind: 'primary' },
         ],
+        runtime: '55m',
         rating: 8.1,
         target: { type: 'episode', id: 139061, title: 'Game of Thrones 3x01' },
         season: { show: 1390, number: 3, episode: 1 },
       });
+      expect(expanded('Game of Thrones').upNext?.overview).toMatch(/^A sample overview/);
     });
 
-    it('should card the show once nothing is left, by its status', () => {
-      expect(expanded('The Wire').next).toMatchObject({
-        href: '/shows/the-wire',
-        title: 'The Wire',
-        year: 2002,
-        tags: [{ text: 'Ended' }],
-        target: { type: 'show', id: 1421 },
-      });
-      expect(expanded('Severance').next?.tags).toEqual([{ text: 'Returns next season!' }]);
+    it('should leave the banner out once every aired episode is watched', () => {
+      expect(expanded('The Wire').upNext).toBeUndefined();
+      expect(expanded('Severance').upNext).toBeUndefined();
     });
   });
 
@@ -129,11 +115,9 @@ describe('toProgressRow', () => {
     it('should use the collected dates and skip the plays', () => {
       expect(library).toMatchObject({ completed: 11, plays: 0, rewatchingSince: undefined });
       expect(library.last?.date).toBe('Sep 3, 2026 1:04 PM');
-      expect(library.seasons.at(1)?.summary).toBe('4/13 episodes');
-      expect(library.seasons.at(1)?.episodes.at(0)).not.toHaveProperty('plays');
-      expect(library.seasons.at(1)?.episodes.at(0)).toMatchObject({
-        activity: { prefix: 'Added to library on', date: 'Sep 3, 2026 1:01 PM' },
-      });
+      expect(library.strips?.seasons.at(1)?.count).toBe('4/13');
+      expect(library.strips?.seasons.at(1)?.cells.at(0)?.label).toBe('2x01 "Episode 1", in your library');
+      expect(library.upNext).toBeUndefined();
     });
   });
 

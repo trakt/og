@@ -20,6 +20,8 @@ type Sample = {
   resetAt?: string;
   /** An episode type, by season and number. */
   types?: Readonly<Record<string, string>>;
+  /** Announced episodes after each season's aired ones, which may start new seasons. */
+  announced?: readonly number[];
 };
 
 // Public shows with made-up progress, for the specs and the design demo. No artwork, like local OG.
@@ -81,6 +83,7 @@ const samples: readonly Sample[] = [
     genres: ['drama'],
     runtime: 50,
     seasons: [Array(9).fill(true), Array(10).fill(true)],
+    announced: [0, 0, 3],
   },
 ];
 
@@ -104,24 +107,32 @@ function toShow(sample: Sample): CachedShow {
   };
 }
 
+const OVERVIEW = 'A sample overview, long enough to run past one line so the banner has to cut it short and keep the ' +
+  'whole text in its tooltip.';
+
 function toCatalog(sample: Sample): ShowCatalog {
+  const length = Math.max(sample.seasons.length, sample.announced?.length ?? 0);
   return {
     id: sample.id,
     fetchedAt: NOW,
-    seasons: sample.seasons.map((season, s) => ({
-      number: s + 1,
-      title: sample.seasonTitles?.[s] ?? `Season ${s + 1}`,
-      episodes: season.map((_, e) => ({
-        id: episodeId(sample, s + 1, e + 1),
-        season: s + 1,
-        number: e + 1,
-        title: `Episode ${e + 1}`,
-        type: sample.types?.[`${s + 1}x${e + 1}`] ?? 'standard',
-        firstAired: at(s + 1, e + 1),
-        runtime: sample.runtime,
-        rating: 8.1,
-      })),
-    })),
+    seasons: Array.from({ length }, (_, s) => {
+      const aired = sample.seasons[s]?.length ?? 0;
+      return {
+        number: s + 1,
+        title: sample.seasonTitles?.[s] ?? `Season ${s + 1}`,
+        episodes: Array.from({ length: aired + (sample.announced?.[s] ?? 0) }, (_, e) => ({
+          id: episodeId(sample, s + 1, e + 1),
+          season: s + 1,
+          number: e + 1,
+          title: `Episode ${e + 1}`,
+          overview: OVERVIEW,
+          type: sample.types?.[`${s + 1}x${e + 1}`] ?? 'standard',
+          firstAired: e < aired ? at(s + 1, e + 1) : undefined,
+          runtime: sample.runtime,
+          rating: 8.1,
+        })),
+      };
+    }),
   };
 }
 

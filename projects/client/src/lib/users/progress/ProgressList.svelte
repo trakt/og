@@ -256,7 +256,7 @@ function changeHide(hide: ProgressHide[]) {
         </div>
       {:else}
         {#each rows as row (row.id)}
-          <ProgressRow {row} type={data.type} {simple} datePreferences={data.datePreferences}
+          <ProgressRow {row} type={data.type} {simple}
             expanding={expanding.has(row.id)} onexpand={() => onexpand?.(row.id)} />
         {/each}
       {/if}

@@ -1726,21 +1726,55 @@
   --progress-seasons-padding-phone: 15px 10px;
   --progress-seasons-margin-phone: 10px -10px 0;
   --color-progress-toggle-link: light-dark(var(--brand-primary), #fff);
-  --color-progress-toggle-icon: light-dark(#666, #fff);
   --font-size-progress-toggle-icon: 10px;
-  --progress-season-info-margin: 5px 0 2px;
-  --color-progress-season-link: light-dark(#333, #eee);
-  --font-size-progress-season-link: 11px;
-  --font-size-progress-season-hide: 10px;
-  --color-progress-season-count: #aaa;
-  --font-size-progress-season-count: 10px;
-  --progress-season-count-nudge: 3px;
-  --progress-episodes-margin: 4px;
-  --progress-episode-margin: 2px;
-  --progress-episode-gap: 12px;
-  --font-size-progress-episode: 12px;
-  --font-size-progress-episode-icon: 16px;
   --color-progress-episode-done: #1db75e;
+
+  /* The open row: the up-next banner and the fitted season strips */
+  --progress-panel-gap: 12px;
+  --progress-banner-still: 150px;
+  --progress-banner-still-phone: 96px;
+  --progress-banner-gap: 14px;
+  --progress-banner-padding: 8px 12px 8px 8px;
+  --progress-banner-edge: 3px;
+  --progress-banner-play: 28px;
+  --progress-banner-play-icon: 11px;
+  --color-progress-banner-play-bg: rgb(0 0 0 / 45%);
+  --color-progress-banner-play: #fff;
+  --font-size-progress-banner-title: 15px;
+  --font-size-progress-banner-overview: 12px;
+  --line-height-progress-banner-title: 1.25;
+  --progress-banner-text-gap: 3px;
+  --progress-banner-meta-gap: 4px 10px;
+  --progress-banner-kicker-spacing: 0.06em;
+  --progress-banner-tag-gap: 4px;
+  --progress-banner-tag-padding: 2px 5px;
+  --progress-banner-action-gap: 6px;
+  --progress-banner-play-ring: 1.5px;
+  --progress-banner-play-nudge: 2px; /* the triangle's weight sits left of its box */
+  --progress-inline-gap: 4px; /* an icon or a bold code before its text */
+  --progress-strip-label: 30px;
+  --progress-strip-label-phone: 26px;
+  --progress-strip-count: 110px;
+  --progress-strip-column: 36px; /* a column's widest, so short shows don't stretch */
+  --progress-strip-gap: 12px;
+  --progress-strip-row-gap: 5px;
+  --progress-cell-height: 14px;
+  --progress-cell-gap: 2px;
+  --progress-cell-group-gap: 3px; /* the extra gap after every fifth cell */
+  --progress-cell-ring: 2px;
+  --progress-cell-pulse: 6px;
+  --progress-cell-pulse-duration: 2.4s;
+  --color-progress-cell: light-dark(#ece5e5, #3b3333);
+  --color-progress-cell-unaired: light-dark(#c9c0c0, #5a5050);
+  --color-progress-cell-pulse: color-mix(in srgb, var(--brand-primary) 55%, transparent);
+  --color-progress-cell-still: color-mix(in srgb, var(--brand-primary) 35%, transparent);
+  --font-size-progress-tick: 9px;
+  --font-size-progress-readout: 13px;
+  --progress-readout-height: 20px;
+  --progress-legend-swatch: 10px;
+  --progress-legend-swatch-gap: 5px;
+  --progress-legend-gap: 4px 14px;
+  --progress-cell-hairline: 1px; /* the not-aired outline and the focus ring's offset */
 
   /* A label over a poster's bottom-left corner (`.posters h4.bottom`) */
   --poster-label-bottom: 8px;
