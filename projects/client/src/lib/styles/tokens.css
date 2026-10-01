@@ -703,7 +703,6 @@
   --font-size-tab: 13px;
   --font-size-count: 10px; /* the count badge on a tab */
   --font-size-no-results: 26px;
-  --font-size-loading-logo: 60px;
   --radius-tab: 3px;
   --tab-padding: 3px 6px 2px;
   --tab-gap: 7px;
@@ -722,6 +721,14 @@
   --color-no-results-text: #555; /* on the dark charts frame in both themes */
   --color-frame: #1d1d1d; /* the charts and search frame, dark in both themes */
   --color-text-inverse: #fff; /* on red: the current page, the active tab, the loading states */
+
+  /* Loader: the liquid-fill Trakt mark (TraktLoader, static/loader.svg) */
+  --color-loader-brand: var(--brand-primary); /* the ring and the rising fill */
+  --color-loader-empty: light-dark(
+    color-mix(in srgb, var(--brand-primary) 18%, transparent),
+    color-mix(in srgb, var(--brand-primary) 28%, transparent)
+  ); /* the disc before it fills */
+  --color-loader-stripe: #fff; /* the monogram */
 
   /* VIP and Private labels */
   --font-size-label: 16px;

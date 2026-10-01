@@ -1,17 +1,17 @@
 <!--
-  OG's page loader (`#loading-bg`): a dark full-screen veil with the Trakt logo pulsing in the middle and an optional
-  message under it. OG showed it on every page navigation and while forms submitted.
+  OG's page loader (`#loading-bg`): a dark full-screen veil with the Trakt mark in the middle and an optional message
+  under it. OG pulsed its logo; og fills the mark with TraktLoader. OG showed it on every page navigation and while
+  forms submitted.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import traktLogo from '$lib/icons/trakt/trakt.svg?raw';
+import TraktLoader from './TraktLoader.svelte';
 
 const { visible, message }: { visible: boolean; message?: string } = $props();
 </script>
 
-<div class={['loading', { visible }]} role="status">
-    <span class="logo"><Icon svg={traktLogo} label={message ? undefined : 'Loading'} /></span>
-    {#if message}<p>{message}</p>{/if}
+<div class={['loading', { visible }]}>
+    <TraktLoader label={message ?? 'Loading'} />
+    {#if message}<p aria-hidden="true">{message}</p>{/if}
 </div>
 
 <style>
@@ -36,18 +36,9 @@ const { visible, message }: { visible: boolean; message?: string } = $props();
   }
 }
 
-.logo {
-  font-size: var(--font-size-loading-logo);
-  line-height: 1;
-}
-
-.logo,
-p {
-  animation: pulse 2s infinite linear;
-}
-
 p {
   margin: var(--space-sm-inline) 0 0;
+  animation: pulse 2s infinite linear;
 }
 
 @keyframes pulse {
