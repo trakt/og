@@ -416,12 +416,32 @@ async function toggleDarkKnight() {
   display: none;
 }
 
-/* OG swaps the nav for a menu button on smaller screens (tablet and mobile layouts). */
+/* OG's tablet layout: tighter gutters and nav links, and the search shrinks to its icon. */
+@media (width <= 1200px) {
+  .top-nav {
+    column-gap: var(--space-header-tablet);
+    padding-inline: var(--space-lg-inline) var(--space-header-tablet);
+  }
+
+  .links {
+    margin-inline-end: 0;
+
+    & > a,
+    & :global(.trigger) {
+      padding-inline: var(--space-base-inline);
+    }
+  }
+
+  .spacer {
+    inline-size: var(--space-base-inline);
+  }
+}
+
+/* OG swaps the nav for a menu button on smaller screens. Montserrat runs wider than OG's font, so it happens at 992px,
+   not 768px. */
 @media (width < 992px) {
   .top-nav {
     grid-template-columns: 32px 1fr auto;
-    column-gap: var(--space-lg-inline);
-    padding-inline-start: var(--space-lg-inline);
   }
 
   .links {
@@ -431,14 +451,12 @@ async function toggleDarkKnight() {
   .mobile-links {
     display: block;
   }
-
-  .top-nav > :global(.header-search) {
-    min-inline-size: 0;
-  }
 }
 
+/* Phones keep Get VIP and swap Join and Sign In for the account icon. */
 @media (width < 768px) {
-  .btn,
+  .btn-signup,
+  .btn-signin,
   .name {
     display: none;
   }

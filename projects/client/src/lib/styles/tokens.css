@@ -543,11 +543,15 @@
   --color-menu-separator: light-dark(#e1e1e1, #444); /* between the Apps menu rows */
   --color-footer-muted: #777;
   --blur-header: blur(4px);
+  --space-header-tablet: 8px; /* column gap and end padding at 1200px and below */
 
   /* Header search and its autocomplete */
   --search-max-width: 900px;
   --search-control-height: 42px;
   --search-focused-min-width: 500px;
+  --search-collapsed-width: 40px; /* the icon-only field at 1200px and below */
+  --search-icon-size-mobile: 18px;
+  --space-search-mobile-inset: 9px; /* the focused field's gap to the screen edges on phones */
   --search-type-width: 140px; /* the type picker */
   --search-poster-width: 50px;
 
@@ -1419,6 +1423,13 @@
   --media-tools-line-height: 1.2;
   --media-tools-under-margin: -2px;
   --font-size-media-tools-under: 10px;
+}
+
+/* OG's phone header is 5px shorter. */
+@media (width < 768px) {
+  :root {
+    --header-height: 60px;
+  }
 }
 
 /* Optional library metadata (red-era OG). */

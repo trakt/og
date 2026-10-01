@@ -145,7 +145,9 @@ textarea {
   color: inherit;
 }
 
-input:not([type='checkbox'], [type='radio'], [type='range'], [type='color']),
+/* :where() keeps this at element specificity. A bare :not([type]) ties with a component's scoped `input` rule, and
+   production loads this file after the component chunks, so this default won and repainted the header search. */
+input:where(:not([type='checkbox'], [type='radio'], [type='range'], [type='color'])),
 select,
 textarea {
   min-block-size: var(--control-height);
