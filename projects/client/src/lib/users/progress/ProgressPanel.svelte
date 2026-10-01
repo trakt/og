@@ -1,21 +1,21 @@
 <!--
-  An open progress row's panel: the up-next banner (when there's an episode left), then the fitted season strips, one
-  row a season and one cell an episode, all on the longest season's columns. A ruler under them marks every fifth
-  episode and the up-next column. Each season row is one tab stop: the arrows move within it, up and down to the
-  same episode in the next season, Home and End to its ends. Hovering or focusing a cell shows it in the readout line,
-  and the up-next cell and the banner outline each other. A legend and the exact watched and left times close it.
+  An open progress row's panel: the up-next banner (when there's an episode left), then the season picker and the
+  chosen season's episode tiles. The picker is a set of toggle buttons, one a season with its count and a bar; it opens
+  on up next's season and keeps its choice per row. Each tile links to its episode and says whether it's watched, up
+  next, aired or not yet aired. Hovering or focusing a tile shows it in the readout line, and the up-next tile and the
+  banner outline each other. The exact watched and left times close it. On a narrow panel the picker wraps above the
+  tiles.
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
 import type { ProgressType } from './progressTypes.ts';
-import { roveCell } from './roveCell.ts';
 import type { ProgressRow } from './toProgressRow.ts';
-import type { ProgressStrips, StripCell } from './toProgressStrips.ts';
+import type { EpisodeTile, SeasonPicker } from './toSeasonPicker.ts';
 import UpNextBanner from './UpNextBanner.svelte';
 
 interface Props {
-  strips: ProgressStrips;
+  picker: SeasonPicker;
   upNext?: ProgressRow['upNext'];
   last?: ProgressRow['last'];
   watchedTime: string;
@@ -23,38 +23,26 @@ interface Props {
   type: ProgressType;
 }
 
-const { strips, upNext, last, watchedTime, leftTime, type }: Props = $props();
+const { picker, upNext, last, watchedTime, leftTime, type }: Props = $props();
 
-let grid = $state<HTMLElement>();
-let readout = $state<StripCell>();
+let chosen = $state<number>();
+let readout = $state<EpisodeTile>();
 let linked = $state(false);
-// Each season row's tab stop, once the keyboard has moved it.
-let moved = $state<Record<number, number>>({});
 
 const library = $derived(type === 'library');
-const lengths = $derived(strips.seasons.map(({ cells }) => cells.length));
-const stop = (row: number) =>
-  moved[row] ?? Math.max(strips.seasons.at(row)?.cells.findIndex(({ state }) => state === 'up-next') ?? 0, 0);
+const season = $derived(
+  picker.seasons.find(({ number }) => number === (chosen ?? picker.selected)) ?? picker.seasons.at(0),
+);
 
-function show(cell: StripCell, on: boolean) {
-  if (on) readout = cell;
-  if (cell.state === 'up-next') linked = on;
+function pick(number: number) {
+  chosen = number;
+  readout = undefined;
 }
 
-function rove(event: KeyboardEvent, row: number, index: number) {
-  const to = roveCell({ key: event.key, row, index, lengths });
-  if (!to) return;
-  event.preventDefault();
-  moved = { ...moved, [to.row]: to.index };
-  grid?.querySelectorAll('ul').item(to.row)?.querySelectorAll('a').item(to.index)?.focus();
+function show(tile: EpisodeTile, on: boolean) {
+  if (on) readout = tile;
+  if (tile.state === 'up-next') linked = on;
 }
-
-const legend = $derived([
-  { state: 'watched', text: library ? 'in library' : 'watched' },
-  { state: 'not-watched', text: library ? 'not in library' : 'not watched' },
-  { state: 'up-next', text: 'up next' },
-  { state: 'not-aired', text: 'not aired' },
-]);
 </script>
 
 <!-- Episode pages are OG routes og hasn't all built yet, and resolve() only takes routes that exist. -->
@@ -62,39 +50,40 @@ const legend = $derived([
 <div class="panel">
   {#if upNext}<UpNextBanner next={upNext} {linked} onlink={(on) => (linked = on)} />{/if}
 
-  <div class="strips" bind:this={grid} style:--columns={strips.columns}>
-    {#each strips.seasons as season, row (season.number)}
-      <div class="strip">
-        <span class="label" aria-hidden="true">{season.label}</span>
-        <ul class="cells" aria-label={season.name}>
-          {#each season.cells as cell, index (cell.code)}
+  {#if season}
+    <div class="pane">
+      <div class="picker" role="group" aria-label="Seasons">
+        {#each picker.seasons as { number, name, count, complete, percent, summary } (number)}
+          <button type="button" class="pick" aria-pressed={number === season.number} aria-label="{name}, {summary}"
+            onclick={() => pick(number)}>
+            <span class="name">{name}</span>
+            <span class="count">{#if complete}<span class="done"><Icon svg={check} /></span>{/if}{count}</span>
+            <span class="bar"><span style:inline-size="{percent}%"></span></span>
+          </button>
+        {/each}
+      </div>
+
+      <div class="season">
+        <p class="heading"><b>{season.name}</b><span class="count">{season.summary}</span></p>
+        <ul class="tiles" aria-label="{season.name} episodes">
+          {#each season.tiles as tile (tile.code)}
             <li>
-              <a class={['cell', cell.state, { linked: linked && cell.state === 'up-next' }]} href={cell.href}
-                aria-label={cell.label} tabindex={stop(row) === index ? 0 : -1} onkeydown={(event) => rove(event, row, index)}
-                onpointerenter={() => show(cell, true)} onpointerleave={() => show(cell, false)}
-                onfocus={() => show(cell, true)} onblur={() => show(cell, false)}></a>
+              <a class={['tile', tile.state, { linked: linked && tile.state === 'up-next' }]} href={tile.href}
+                aria-label={tile.label} onpointerenter={() => show(tile, true)} onpointerleave={() => show(tile, false)}
+                onfocus={() => show(tile, true)} onblur={() => show(tile, false)}>
+                <b>{tile.number}</b>
+                <span class="title">{tile.title ?? tile.code}</span>
+                <span class="note">{tile.note}</span>
+              </a>
             </li>
           {/each}
         </ul>
-        <span class="count">{#if season.complete}<span class="done"><Icon svg={check} /></span>{/if}{season.count}</span>
-      </div>
-    {/each}
-    <div class="strip" aria-hidden="true">
-      <span></span>
-      <div class="ticks">
-        {#each strips.ticks as tick, index (index)}<span class={{ mark: tick.mark }}>{tick.text}</span>{/each}
+        <p class="readout" aria-live="polite">
+          {#if readout}<b>{readout.code}</b> {readout.readout}{:else}Hover or focus an episode to see it here.{/if}
+        </p>
       </div>
     </div>
-  </div>
-
-  <p class="readout" aria-live="polite">
-    {#if readout}<b>{readout.code}</b>{readout.label.slice(readout.code.length)}{:else}Hover or focus an episode to see it
-      here.{/if}
-  </p>
-
-  <ul class="legend" aria-label="Legend">
-    {#each legend as { state, text } (state)}<li><span class={['swatch', state]}></span>{text}</li>{/each}
-  </ul>
+  {/if}
 
   {#if last?.number || !library}
     <p class="exact">
@@ -113,91 +102,67 @@ const legend = $derived([
   font-size: var(--font-size-progress-row);
 }
 
+p,
 ul {
   margin: 0;
+}
+
+ul {
   padding: 0;
   list-style: none;
 }
 
-.strips {
+.pane {
   display: grid;
-  gap: var(--progress-strip-row-gap);
-  min-inline-size: 0;
+  grid-template-columns: var(--progress-picker-width) minmax(0, 1fr);
+  gap: var(--progress-pane-gap);
+  align-items: start;
 }
 
-.strip {
+.picker {
   display: grid;
-  grid-template-columns:
-    var(--progress-strip-label)
-    minmax(0, calc(var(--columns) * var(--progress-strip-column)))
-    var(--progress-strip-count);
-  gap: var(--progress-strip-gap);
-  align-items: center;
-  justify-content: start;
+  gap: var(--progress-picker-gap);
 }
 
-.label {
+.pick {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--progress-picker-text-gap);
+  padding: var(--progress-picker-padding);
+  border: 0;
+  border-inline-start: var(--progress-picker-edge) solid transparent;
+  background-color: var(--color-progress-seasons-bg);
+  color: var(--color-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-progress-picker-hover);
+  }
+
+  &[aria-pressed='true'] {
+    border-inline-start-color: var(--brand-primary);
+    background-color: var(--color-surface);
+    box-shadow: inset 0 0 0 var(--progress-cell-hairline) var(--color-separator);
+  }
+}
+
+.name {
   font-family: var(--font-headings);
   font-size: var(--font-size-small);
   font-weight: var(--font-weight-headings);
 }
 
-.cells,
-.ticks {
-  display: grid;
-  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
-  gap: var(--progress-cell-gap);
-
-  & > :nth-child(5n) {
-    margin-inline-end: var(--progress-cell-group-gap);
-  }
-}
-
-.cells li {
-  display: flex;
-}
-
-.cell {
-  flex: 1;
-  block-size: var(--progress-cell-height);
+.bar {
+  grid-column: 1 / -1;
+  block-size: var(--progress-picker-bar);
   background-color: var(--color-progress-cell);
 
-  &.watched {
+  & span {
+    display: block;
+    block-size: 100%;
     background-color: var(--brand-primary);
-  }
-
-  &.up-next {
-    background-color: var(--color-surface);
-    box-shadow: inset 0 0 0 var(--progress-cell-ring) var(--brand-primary);
-    animation: pulse var(--progress-cell-pulse-duration) ease-out infinite;
-  }
-
-  &.not-aired {
-    background: none;
-    box-shadow: inset 0 0 0 var(--progress-cell-hairline) var(--color-progress-cell-unaired);
-  }
-
-  &:focus-visible,
-  &.linked {
-    position: relative;
-    z-index: 1;
-    outline: var(--progress-cell-ring) solid var(--color-text);
-    outline-offset: var(--progress-cell-hairline);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow:
-      inset 0 0 0 var(--progress-cell-ring) var(--brand-primary),
-      0 0 0 0 var(--color-progress-cell-pulse);
-  }
-
-  70%,
-  100% {
-    box-shadow:
-      inset 0 0 0 var(--progress-cell-ring) var(--brand-primary),
-      0 0 0 var(--progress-cell-pulse) transparent;
   }
 }
 
@@ -213,91 +178,163 @@ ul {
   color: var(--color-progress-episode-done);
 }
 
-.ticks {
-  color: var(--color-text-muted);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-progress-tick);
-  font-variant-numeric: tabular-nums;
+.season {
+  display: grid;
+  gap: var(--progress-season-gap);
+  min-inline-size: 0;
+}
 
-  & span {
-    white-space: nowrap;
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--progress-season-heading-gap);
+  align-items: baseline;
+
+  & b {
+    font-family: var(--font-headings);
+    font-size: var(--font-size-progress-season-heading);
+    font-weight: var(--font-weight-headings-heavy);
+  }
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--progress-tile-min), 1fr));
+  gap: var(--progress-tile-gap);
+
+  & li {
+    display: grid;
+  }
+}
+
+.tile {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--progress-tile-text-gap);
+  align-items: baseline;
+  padding: var(--progress-tile-padding);
+  border: var(--progress-cell-hairline) solid var(--color-separator);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--color-text-muted);
   }
 
-  & .mark {
-    color: var(--brand-primary);
+  & b {
+    grid-row: span 2;
+    min-inline-size: var(--progress-tile-number-min);
+    color: var(--color-text-muted);
+    font-family: var(--font-headings);
+    font-size: var(--font-size-progress-tile-number);
     font-weight: var(--font-weight-headings-heavy);
+  }
+
+  &.watched {
+    background-color: var(--color-progress-seasons-bg);
+    box-shadow: inset var(--progress-picker-edge) 0 0 var(--brand-primary);
+
+    & b {
+      color: var(--brand-primary);
+    }
+  }
+
+  &.up-next {
+    border-color: var(--brand-primary);
+    box-shadow: inset 0 0 0 var(--progress-cell-hairline) var(--brand-primary);
+    animation: pulse var(--progress-cell-pulse-duration) ease-out infinite;
+
+    & b,
+    & .note {
+      color: var(--brand-primary);
+    }
+  }
+
+  &.not-aired {
+    border-style: dashed;
+    color: var(--color-text-muted);
+  }
+
+  &:focus-visible,
+  &.linked {
+    position: relative;
+    z-index: 1;
+    outline: var(--progress-cell-ring) solid var(--color-text);
+    outline-offset: var(--progress-cell-hairline);
+  }
+}
+
+.title {
+  overflow: hidden;
+  font-size: var(--font-size-progress-tile-title);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.note {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-progress-tile-note);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow:
+      inset 0 0 0 var(--progress-cell-hairline) var(--brand-primary),
+      0 0 0 0 var(--color-progress-cell-pulse);
+  }
+
+  70%,
+  100% {
+    box-shadow:
+      inset 0 0 0 var(--progress-cell-hairline) var(--brand-primary),
+      0 0 0 var(--progress-cell-pulse) transparent;
   }
 }
 
 .readout {
   min-block-size: var(--progress-readout-height);
-  margin: 0;
   color: var(--color-text-muted);
-  font-size: var(--font-size-progress-readout);
+  font-size: var(--font-size-small);
 
   & b {
-    margin-inline-end: var(--progress-inline-gap);
     color: var(--color-text);
     font-family: var(--font-headings);
   }
 }
 
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--progress-legend-gap);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-small);
-}
-
-.swatch {
-  display: inline-block;
-  inline-size: var(--progress-legend-swatch);
-  block-size: var(--progress-legend-swatch);
-  margin-inline-end: var(--progress-legend-swatch-gap);
-  vertical-align: middle;
-
-  /* The cells' states, held still. */
-  &.watched {
-    background-color: var(--brand-primary);
-  }
-
-  &.not-watched {
-    background-color: var(--color-progress-cell);
-  }
-
-  &.up-next {
-    box-shadow: inset 0 0 0 var(--progress-cell-ring) var(--brand-primary);
-  }
-
-  &.not-aired {
-    box-shadow: inset 0 0 0 var(--progress-cell-hairline) var(--color-progress-cell-unaired);
-  }
-}
-
 .exact {
-  margin: 0;
   color: var(--color-text-muted);
   font-size: var(--font-size-small);
 }
 
-@container progress-panel (width < 640px) {
-  .strip {
-    grid-template-columns: var(--progress-strip-label-phone) minmax(0, 1fr);
-    row-gap: var(--progress-cell-gap);
+@container progress-panel (width < 760px) {
+  .pane {
+    grid-template-columns: var(--progress-picker-width-tablet) minmax(0, 1fr);
+    gap: var(--progress-pane-gap-tablet);
   }
 
-  .count {
-    grid-column: 2;
+  .tiles {
+    grid-template-columns: repeat(auto-fill, minmax(var(--progress-tile-min-tablet), 1fr));
+  }
+}
+
+@container progress-panel (width < 480px) {
+  .pane {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .picker {
+    grid-template-columns: repeat(auto-fill, minmax(var(--progress-picker-min-phone), 1fr));
   }
 }
 
 /* The ring holds still, with a soft halo in place of the pulse. */
 @media (prefers-reduced-motion: reduce) {
-  .cell.up-next {
+  .tile.up-next {
     animation: none;
     box-shadow:
-      inset 0 0 0 var(--progress-cell-ring) var(--brand-primary),
+      inset 0 0 0 var(--progress-cell-hairline) var(--brand-primary),
       0 0 0 var(--progress-cell-ring) var(--color-progress-cell-still);
   }
 }

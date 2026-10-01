@@ -69,7 +69,7 @@ function fromSummary(params: ToProgressItemParams): ProgressItem {
   };
 }
 
-type Episode = ProgressEpisodeData & { readonly episode: CatalogEpisode; readonly runtime: number };
+type Episode = ProgressEpisodeData & { readonly episode: CatalogEpisode };
 
 /** With a catalog: every aired, unhidden episode, so the counts, times, seasons and next episode are exact. */
 function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): ProgressItem {
@@ -95,6 +95,8 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
           plays: dates.length,
           minutesWatched: dates.length * runtime,
           at: kind === 'watched' ? latest(dates) : added,
+          firstAired: episode.firstAired,
+          rating: episode.rating,
         };
       }),
     }))
@@ -108,15 +110,8 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
     plays: sum(episodes.map(({ plays }) => plays)),
     minutesWatched: sum(episodes.map(({ minutesWatched }) => minutesWatched)),
     minutesLeft: sum(episodes.filter(({ done }) => !done).map(({ runtime }) => runtime)),
-    episodes: episodes.map(({ number, title, done, plays, minutesWatched, at }) => ({
-      number,
-      title,
-      done,
-      plays,
-      minutesWatched,
-      at,
-    })),
-    upcoming: upcoming.map(({ number, title }) => ({ number, title })),
+    episodes: episodes.map(({ episode: _, ...data }) => data),
+    upcoming: upcoming.map(({ number, title, firstAired }) => ({ number, title, firstAired })),
   });
 
   const all = seasons.flatMap(({ episodes }) => episodes);

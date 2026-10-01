@@ -32,7 +32,7 @@ describe('toProgressRow', () => {
         watchedTime: '~10h 11m',
         leftTime: '~7h 3m',
         last: { relative: 'a month ago', date: 'Sep 3, 2026 1:04 PM' },
-        strips: undefined,
+        picker: undefined,
         upNext: undefined,
       });
       expect(collapsed('Breaking Bad').last).not.toHaveProperty('number');
@@ -58,20 +58,20 @@ describe('toProgressRow', () => {
       });
     });
 
-    it('should strip each season, announced episodes included', () => {
-      const { strips } = expanded('Severance');
+    it('should pick each season, announced episodes included', () => {
+      const { picker } = expanded('Severance');
 
-      expect(strips?.columns).toBe(10);
-      expect(strips?.seasons.map(({ label, count }) => [label, count])).toEqual([
-        ['S1', '9/9'],
-        ['S2', '10/10'],
-        ['S3', '3 announced'],
+      expect(picker?.selected).toBe(2);
+      expect(picker?.seasons.map(({ name, count }) => [name, count])).toEqual([
+        ['Season 1', '9'],
+        ['Season 2', '10'],
+        ['Season 3', 'soon'],
       ]);
-      expect(strips?.seasons.at(2)?.cells.at(0)).toEqual({
+      expect(picker?.seasons.at(2)?.tiles.at(0)).toMatchObject({
         code: '3x01',
         href: '/shows/severance/seasons/3/episodes/1',
         state: 'not-aired',
-        label: '3x01 "Episode 1", not aired',
+        note: 'airs Jan 14, 2027',
       });
     });
 
@@ -115,8 +115,10 @@ describe('toProgressRow', () => {
     it('should use the collected dates and skip the plays', () => {
       expect(library).toMatchObject({ completed: 11, plays: 0, rewatchingSince: undefined });
       expect(library.last?.date).toBe('Sep 3, 2026 1:04 PM');
-      expect(library.strips?.seasons.at(1)?.count).toBe('4/13');
-      expect(library.strips?.seasons.at(1)?.cells.at(0)?.label).toBe('2x01 "Episode 1", in your library');
+      expect(library.picker?.seasons.at(1)?.count).toBe('4/13');
+      expect(library.picker?.seasons.at(1)?.tiles.at(0)?.label).toBe(
+        '2x01 "Episode 1", in your library, added Sep 3, 2026',
+      );
       expect(library.upNext).toBeUndefined();
     });
   });
