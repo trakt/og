@@ -828,20 +828,54 @@ input {
   margin-block-start: var(--space-search-section);
 }
 
-@media (width < 768px) {
-  .header-search.focused {
-    position: fixed;
-    inset-block-start: calc((var(--header-height) - var(--search-control-height)) / 2);
-    inset-inline: var(--space-lg-inline);
-    z-index: var(--z-header);
+/* At 1200px and below OG shrank the field to its magnifier. Focus opens it at full width over the nav. */
+@media (width <= 1200px) {
+  .header-search {
+    position: relative;
+    block-size: var(--search-control-height);
+  }
+
+  input {
+    inline-size: var(--search-collapsed-width);
+    min-inline-size: 0;
+    padding-inline-end: 0;
+    field-sizing: fixed;
+  }
+
+  .focused form {
+    position: absolute;
+    inset-block-start: 0;
+    inline-size: var(--search-focused-min-width);
   }
 }
 
-@media (width < 992px) {
+/* Phones: a bare magnifier, and focus spreads the field across the bar. */
+@media (width < 768px) {
+  .header-search:not(.focused) {
+    margin-inline-start: calc(-1 * var(--space-sm-inline));
+  }
+
   input {
-    inline-size: 100%;
-    min-inline-size: 0;
-    field-sizing: fixed;
+    background-color: transparent;
+  }
+
+  .search-icon {
+    inset-inline-start: var(--space-base-inline);
+    inset-block-start: calc((var(--search-control-height) - var(--search-icon-size-mobile)) / 2);
+    font-size: var(--search-icon-size-mobile);
+    line-height: 1;
+  }
+
+  .header-search.focused {
+    position: fixed;
+    inset-block-start: calc((var(--header-height) - var(--search-control-height)) / 2);
+    inset-inline: var(--space-search-mobile-inset);
+    z-index: var(--z-header);
+  }
+
+  .focused form {
+    position: relative;
+    inline-size: auto;
   }
 }
 </style>
