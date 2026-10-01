@@ -5,16 +5,15 @@ import { progressPercent } from '../../components/media/progressPercent.ts';
 import type { TickRun } from '../../components/media/TickRun.ts';
 import { tickRuns } from '../../components/media/tickRuns.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
+import type { CatalogEpisode } from '../../shows/cache/ShowCatalog.ts';
 import { formatDate } from '../../utils/formatDate.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 import { relativeDate } from '../../utils/relativeDate.ts';
-import type { ProgressRowData } from './progressRowsSchema.ts';
+import type { ProgressEpisodeData, ProgressItem, ProgressSeasonData } from './ProgressItem.ts';
 import type { ProgressType } from './progressTypes.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
-type SeasonData = NonNullable<ProgressRowData['progress']['seasons']>[number];
-type EpisodeData = SeasonData['episodes'][number];
 
 /** One "1x05" chip under an open season, with its tooltip. */
 export type ProgressEpisode = {
@@ -40,7 +39,7 @@ export type ProgressSeason = {
   readonly episodes: readonly ProgressEpisode[];
 };
 
-/** The fanart card on a row's right: the next episode, or the show once there's none. */
+/** The fanart card in an expanded row: the next episode, or the show once there's none. */
 export type ProgressNext = {
   readonly href: string;
   readonly title: string;
@@ -66,14 +65,14 @@ export type ProgressRow = {
   readonly completed: number;
   readonly left: number;
   readonly plays: number;
-  /** "1d 3h", Watched only. */
+  /** "1d 3h", Watched only. "~" in front while it's an estimate from the show's runtime. */
   readonly watchedTime: string;
   readonly leftTime: string;
-  /** The last watched (or collected) episode, with when. */
+  /** The last watched (or collected) date, with the episode once the row is expanded. */
   readonly last?: {
-    readonly number: string;
+    readonly number?: string;
     readonly title?: string;
-    readonly href: string;
+    readonly href?: string;
     readonly relative?: string;
     readonly date: string;
   };
@@ -82,16 +81,14 @@ export type ProgressRow = {
   /** "July 2, 2024" while the show is being rewatched. */
   readonly rewatchingSince?: string;
   readonly seasons: readonly ProgressSeason[];
-  readonly next: ProgressNext;
+  readonly next?: ProgressNext;
 };
 
 type ToProgressRowParams = {
-  row: ProgressRowData;
+  item: ProgressItem;
   type: ProgressType;
   datePreferences: DatePreferences;
   now: Date;
-  /** When you dropped the show, on the Dropped tab (`/users/hidden/dropped` `hidden_at`). */
-  droppedAt?: string;
 };
 
 const UNKNOWN_DATE = Date.parse('1970-01-01T00:00:00Z');
@@ -99,6 +96,7 @@ const isUnknown = (date: string) => Date.parse(date) === UNKNOWN_DATE;
 const count = (n: number) => n.toLocaleString('en-US');
 const plural = (n: number, word: string) => `${word}${n === 1 ? '' : 's'}`;
 const titleCase = (value: string) => value.replace(/\b\w/g, (letter) => letter.toUpperCase());
+const runtime = (minutes: number, exact: boolean) => `${exact ? '' : '~'}${formatRuntime(minutes)}`;
 
 /** Without seasons, the watched share from the left, which is how the ticks look when episodes go in order. */
 const countRuns = (completed: number, aired: number) =>
@@ -110,14 +108,14 @@ const countRuns = (completed: number, aired: number) =>
 // OG's `season_title?`: a title that only restates the number isn't repeated after it.
 const RESTATED = /^(season|special|temporada|stagione|saison|series|sezonul|staffel)/i;
 
-function seasonTitle({ number, title }: SeasonData): string {
+function seasonTitle({ number, title }: ProgressSeasonData): string {
   const prefix = number === 0 ? 'Specials' : `Season ${number}`;
   if (!title || RESTATED.test(title)) return prefix;
   return `${prefix}: ${title}`;
 }
 
 type EpisodeParams = {
-  episode: EpisodeData;
+  episode: ProgressEpisodeData;
   season: number;
   showHref: string;
   type: ProgressType;
@@ -126,142 +124,142 @@ type EpisodeParams = {
 
 function toEpisode({ episode, season, showHref, type, datePreferences }: EpisodeParams): ProgressEpisode {
   const label = `${season}x${String(episode.number).padStart(2, '0')}`;
-  const at = type === 'watched' ? episode.last_watched_at : episode.collected_at;
-  const playCount = episode.stats?.play_count ?? 0;
+  const { at, plays } = episode;
 
   return {
     key: label,
     label,
     href: `${showHref}/seasons/${season}/episodes/${episode.number}`,
-    done: episode.completed,
-    ...(type === 'watched' && playCount > 0 && {
-      plays: {
-        text: `${count(playCount)} ${plural(playCount, 'play')}`,
-        detail: formatRuntime(episode.stats?.minutes_watched),
-      },
+    done: episode.done,
+    ...(type !== 'library' && plays > 0 && {
+      plays: { text: `${count(plays)} ${plural(plays, 'play')}`, detail: formatRuntime(episode.minutesWatched) },
     }),
     ...(at && {
       activity: {
-        prefix: type === 'watched' ? 'Last watched on' : 'Added to library on',
+        prefix: type === 'library' ? 'Added to library on' : 'Last watched on',
         date: isUnknown(at) ? 'Unknown date' : formatDate(at, { ...datePreferences, time: true }),
       },
     }),
   };
 }
 
-function seasonSummary(season: SeasonData, type: ProgressType): string {
+function seasonSummary(season: ProgressSeasonData, type: ProgressType): string {
   const episodes = `${count(season.completed)}/${count(season.aired)} episodes`;
   if (type === 'library') return episodes;
 
-  const plays = season.stats?.play_count ?? 0;
-  const minutesLeft = season.stats?.minutes_left ?? 0;
   const left = Math.max(season.aired - season.completed, 0);
   return [
     episodes,
-    ...(plays > 0
-      ? [`${count(plays)} ${plural(plays, 'play')} (${formatRuntime(season.stats?.minutes_watched)})`]
+    ...(season.plays > 0
+      ? [`${count(season.plays)} ${plural(season.plays, 'play')} (${formatRuntime(season.minutesWatched)})`]
       : []),
-    ...(minutesLeft > 0 ? [`${count(left)} remaining (${formatRuntime(minutesLeft)})`] : []),
+    ...(season.minutesLeft > 0 ? [`${count(left)} remaining (${formatRuntime(season.minutesLeft)})`] : []),
   ].join(' — ');
 }
 
-function toSeason(season: SeasonData, params: Omit<EpisodeParams, 'episode' | 'season'>): ProgressSeason {
+function toSeason(season: ProgressSeasonData, params: Omit<EpisodeParams, 'episode' | 'season'>): ProgressSeason {
   return {
     number: season.number,
     title: seasonTitle(season),
     href: `${params.showHref}/seasons/${season.number}`,
     percent: progressPercent(season),
-    ticks: tickRuns(season.episodes.map(({ completed }) => completed)),
+    ticks: tickRuns(season.episodes.map(({ done }) => done)),
     summary: seasonSummary(season, params.type),
     episodes: season.episodes.map((episode) => toEpisode({ ...params, episode, season: season.number })),
   };
 }
 
-function toNext(row: ProgressRowData, datePreferences: DatePreferences): ProgressNext {
-  const { show, progress } = row;
-  const showHref = `/shows/${show.ids.slug}`;
-  const episode = progress.next_episode;
+/** The API's episode fields that `episodeType` and `episodeNumber` read. */
+const tagged = (episode: CatalogEpisode) => ({
+  season: episode.season,
+  number: episode.number,
+  episode_type: episode.type,
+  number_abs: episode.numberAbs,
+});
+
+function toNext({ item, datePreferences }: ToProgressRowParams): ProgressNext {
+  const { show, detail } = item;
+  const showHref = `/shows/${show.slug}`;
+  const episode = detail?.next;
 
   if (!episode) {
-    // API's ended status covers canceled shows too.
+    // The API's ended status covers canceled shows too.
     const ended = show.status === 'ended' || show.status === 'canceled';
     return {
       href: showHref,
       title: show.title,
-      year: show.year ?? undefined,
-      image: imageUrl(show.images?.fanart?.at(0), 'medium'),
+      year: show.year,
+      image: imageUrl(show.fanart, 'medium'),
       tags: [{ text: ended && show.status ? titleCase(show.status) : 'Returns next season!' }],
-      rating: show.rating ?? undefined,
-      target: { type: 'show', id: show.ids.trakt, title: show.title },
-      airedEpisodes: progress.aired,
+      rating: show.rating,
+      target: { type: 'show', id: show.id, title: show.title },
+      airedEpisodes: item.aired,
     };
   }
 
-  const label = episodeType(episode);
-  const number = episodeNumber(episode, show.genres);
+  const label = episodeType(tagged(episode));
+  const number = episodeNumber(tagged(episode), show.genres);
   return {
     href: `${showHref}/seasons/${episode.season}/episodes/${episode.number}`,
     title: episode.title ?? '',
     number,
-    image: imageUrl(episode.images?.screenshot?.at(0) ?? show.images?.fanart?.at(0), 'medium'),
+    image: imageUrl(episode.screenshot ?? show.fanart, 'medium'),
     tags: [
       ...(label ? [label] : []),
-      ...(episode.first_aired
-        ? [{ text: formatDate(episode.first_aired, { ...datePreferences, time: true }), kind: 'primary' as const }]
+      ...(episode.firstAired
+        ? [{ text: formatDate(episode.firstAired, { ...datePreferences, time: true }), kind: 'primary' as const }]
         : []),
     ],
-    rating: episode.rating ?? undefined,
-    target: { type: 'episode', id: episode.ids.trakt, title: `${show.title} ${number}` },
-    season: { show: show.ids.trakt, number: episode.season, episode: episode.number },
+    rating: episode.rating,
+    target: { type: 'episode', id: episode.id, title: `${show.title} ${number}` },
+    season: { show: show.id, number: episode.season, episode: episode.number },
   };
 }
 
-function toLast(
-  { row, type, datePreferences, now }: ToProgressRowParams,
-  showHref: string,
-): ProgressRow['last'] {
-  const episode = row.progress.last_episode;
-  const at = type === 'watched' ? row.progress.last_watched_at : row.progress.last_collected_at;
-  if (!episode || !at) return undefined;
+function toLast({ item, datePreferences, now }: ToProgressRowParams, showHref: string): ProgressRow['last'] {
+  const at = item.lastAt;
+  if (!at) return undefined;
 
+  const episode = item.detail?.last;
   const unknown = isUnknown(at);
   return {
-    number: episodeNumber(episode, row.show.genres),
-    title: episode.title ? `"${episode.title}"` : undefined,
-    href: `${showHref}/seasons/${episode.season}/episodes/${episode.number}`,
+    ...(episode && {
+      number: episodeNumber(tagged(episode), item.show.genres),
+      title: episode.title ? `"${episode.title}"` : undefined,
+      href: `${showHref}/seasons/${episode.season}/episodes/${episode.number}`,
+    }),
     relative: unknown ? undefined : relativeDate(at, now),
     date: unknown ? 'Unknown date' : formatDate(at, { ...datePreferences, time: true }),
   };
 }
 
-/** Maps a progress row onto OG's row: poster, tick bar, counts, seasons and the next episode's card. */
+/** Maps a show's progress onto OG's row: poster, tick bar, counts, and, once expanded, seasons and the next episode. */
 export function toProgressRow(params: ToProgressRowParams): ProgressRow {
-  const { row, type, datePreferences, droppedAt } = params;
-  const { show, progress } = row;
-  const href = `/shows/${show.ids.slug}`;
-  const seasons = progress.seasons ?? [];
-  const episodeStates = seasons.flatMap(({ episodes }) => episodes.map(({ completed }) => completed));
-  const left = Math.max(progress.aired - progress.completed, 0);
+  const { item, type, datePreferences } = params;
+  const { show, detail } = item;
+  const href = `/shows/${show.slug}`;
+  const seasons = detail?.seasons ?? [];
+  const episodeStates = seasons.flatMap(({ episodes }) => episodes.map(({ done }) => done));
 
   return {
-    id: show.ids.trakt,
+    id: show.id,
     title: show.title,
     href,
-    poster: imageUrl(show.images?.poster?.at(0), 'thumb'),
-    percent: progressPercent(progress),
-    ticks: episodeStates.length > 0 ? tickRuns(episodeStates) : countRuns(progress.completed, progress.aired),
-    aired: progress.aired,
-    completed: progress.completed,
-    left,
-    plays: progress.stats?.play_count ?? 0,
-    watchedTime: formatRuntime(progress.stats?.minutes_watched),
-    leftTime: formatRuntime(progress.stats?.minutes_left),
+    poster: imageUrl(show.poster, 'thumb'),
+    percent: progressPercent(item),
+    ticks: episodeStates.length > 0 ? tickRuns(episodeStates) : countRuns(item.completed, item.aired),
+    aired: item.aired,
+    completed: item.completed,
+    left: Math.max(item.aired - item.completed, 0),
+    plays: item.plays,
+    watchedTime: runtime(item.minutesWatched, item.exact),
+    leftTime: runtime(item.minutesLeft, item.exact),
     last: toLast(params, href),
-    droppedOn: droppedAt ? formatDate(droppedAt, { ...datePreferences, format: 'LL' }) : undefined,
-    rewatchingSince: type === 'watched' && progress.reset_at
-      ? formatDate(progress.reset_at, { ...datePreferences, format: 'LL' })
+    droppedOn: item.droppedAt ? formatDate(item.droppedAt, { ...datePreferences, format: 'LL' }) : undefined,
+    rewatchingSince: type !== 'library' && item.resetAt
+      ? formatDate(item.resetAt, { ...datePreferences, format: 'LL' })
       : undefined,
     seasons: seasons.map((season) => toSeason(season, { showHref: href, type, datePreferences })),
-    next: toNext(row, datePreferences),
+    next: detail ? toNext(params) : undefined,
   };
 }

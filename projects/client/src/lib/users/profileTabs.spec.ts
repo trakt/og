@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { profileTabs } from './profileTabs.ts';
 
 const current = (pathname: string) =>
-  profileTabs({ slug: 'sean', pathname }).filter((tab) => tab.current).map((tab) => tab.label);
+  profileTabs({ slug: 'sean', pathname, isSelf: true }).filter((tab) => tab.current).map((tab) => tab.label);
 
 describe('profileTabs', () => {
   it('should list OG tabs without the cut and deferred ones', () => {
-    expect(profileTabs({ slug: 'sean', pathname: '/users/sean' }).map((tab) => tab.label)).toEqual([
+    expect(profileTabs({ slug: 'sean', pathname: '/users/sean', isSelf: true }).map((tab) => tab.label)).toEqual([
       'Profile',
       'History',
       'Progress',
@@ -19,8 +19,14 @@ describe('profileTabs', () => {
     ]);
   });
 
+  it("should leave Progress off someone else's profile", () => {
+    const labels = profileTabs({ slug: 'sean', pathname: '/users/sean', isSelf: false }).map((tab) => tab.label);
+    expect(labels).not.toContain('Progress');
+    expect(labels).toHaveLength(8);
+  });
+
   it('should link each tab under the user', () => {
-    const tabs = profileTabs({ slug: 'sean', pathname: '/users/sean' });
+    const tabs = profileTabs({ slug: 'sean', pathname: '/users/sean', isSelf: true });
 
     expect(tabs.at(0)?.href).toBe('/users/sean');
     expect(tabs.at(1)?.href).toBe('/users/sean/history');

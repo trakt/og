@@ -65,7 +65,7 @@ const relation = (value: Partial<ViewerRelation>) =>
   Promise.resolve({ follow: 'none', followsYou: false, blocked: false, requestId: null, ...value } as const);
 
 const counts = { followers: 12_468, following: 1 };
-const tabs = (slug: string, section = '') => profileTabs({ slug, pathname: `/users/${slug}/${section}` });
+const tabs = (slug: string, section = '') => profileTabs({ slug, pathname: `/users/${slug}/${section}`, isSelf: true });
 
 const states = [
   {

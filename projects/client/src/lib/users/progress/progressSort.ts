@@ -18,8 +18,7 @@ export const progressSorts = {
 
 export type ProgressSortBy = keyof typeof progressSorts;
 
-// Old names OG still took (`Progress::WatchedProgress#deprecated_sort_by`), as the sort and direction they meant. The
-// worker's `activity` is OG's Activity Date. OG showed each as "<Name> (unsupported)".
+// Old names OG still took, as the sort and direction they meant. OG showed each as "<Name> (unsupported)".
 const DEPRECATED: Readonly<Record<string, readonly [ProgressSortBy, 'asc' | 'desc']>> = {
   activity: ['added', 'asc'],
   'most-completed': ['completed', 'asc'],
@@ -35,8 +34,8 @@ const DEPRECATED: Readonly<Record<string, readonly [ProgressSortBy, 'asc' | 'des
   'oldest-activity': ['added', 'desc'],
 };
 
-// OG's `asc` is each sort's own order (sort direction in): the most recent,
-// most complete, most played, newest and longest first, but the fewest left and A to Z. The worker sorts literally.
+// OG's `asc` is each sort's own order: the most recent, most complete, most played, newest and longest first, but the
+// fewest left and A to Z. `literalProgressSort` turns it into a plain ascending or descending order.
 const DESCENDING: ReadonlySet<ProgressSortBy> = new Set([
   'added',
   'completed',
@@ -80,8 +79,8 @@ export function progressSort({ segments, saved }: ProgressSortParams): ProgressS
   return { by: 'added', how: path ? direction(pathHow) : 'asc', supported: true };
 }
 
-/** The worker's `:sort_by/:sort_how` for OG's sort. */
-export function apiProgressSort(
+/** OG's sort as a literal key order: `asc` is smallest first. */
+export function literalProgressSort(
   { by, how }: Pick<ProgressSort, 'by' | 'how'>,
 ): { by: ProgressSortBy; how: 'asc' | 'desc' } {
   const [sortBy, sortHow] = isSortBy(by) ? [by, how] as const : DEPRECATED[by] ?? ['added', 'asc'] as const;

@@ -46,6 +46,8 @@ const library = [
     () => HttpResponse.json([{ type: 'movie', movie: ids(1), id: 10, listed_at: '2026-09-29T12:00:00Z' }]),
   ),
   http.get(`${API}/users/hidden/dropped`, () => HttpResponse.json([{ type: 'show', show: ids(2) }])),
+  http.get(`${API}/users/hidden/progress_watched`, () => HttpResponse.json([{ type: 'show', show: ids(5) }])),
+  http.get(`${API}/users/hidden/progress_collected`, () => HttpResponse.json([])),
   http.get(`${API}/v3/users/me/lists`, () => HttpResponse.json([{ id: 50 }])),
   http.get(
     `${API}/lists/50/items`,
@@ -129,7 +131,8 @@ describe('createOverlay', () => {
       rewatching: true,
       rating: null,
     });
-    expect(records.get('sean')?.size).toBe(10);
+    expect(overlay.slices().progressHidden?.watched.shows).toEqual(new Set([5]));
+    expect(records.get('sean')?.size).toBe(11);
   });
 
   it('should hydrate an episode collection by show, season and episode number, including old date-only caches', async () => {

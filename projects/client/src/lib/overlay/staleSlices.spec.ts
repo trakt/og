@@ -47,8 +47,16 @@ describe('staleSlices', () => {
     ]);
   });
 
-  it('should refetch watched shows when a show is hidden', () => {
-    expect(staleSlices(upToDate(), activities({ shows: { hidden_at: T1 } }))).toEqual(['watchedShows', 'rewatching']);
+  it('should refetch watched shows and progress hides when a show is hidden', () => {
+    expect(staleSlices(upToDate(), activities({ shows: { hidden_at: T1 } }))).toEqual([
+      'watchedShows',
+      'rewatching',
+      'progressHidden',
+    ]);
+  });
+
+  it('should refetch progress hides when a season is hidden', () => {
+    expect(staleSlices(upToDate(), activities({ seasons: { hidden_at: T1 } }))).toEqual(['progressHidden']);
   });
 
   it('should map each remaining timestamp to its slice', () => {

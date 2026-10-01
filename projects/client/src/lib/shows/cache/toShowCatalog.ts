@@ -5,7 +5,6 @@ import type { ShowCatalog } from './ShowCatalog.ts';
 const seasonsSchema = z.array(z.object({
   number: z.number(),
   title: z.string().nullish(),
-  aired_episodes: z.number().nullish(),
   episodes: z.array(z.object({
     ids: z.object({ trakt: z.number() }),
     season: z.number(),
@@ -28,7 +27,6 @@ export function toShowCatalog({ id, body, fetchedAt }: { id: number; body: unkno
   const seasons = seasonsSchema.parse(body).map((season) => ({
     number: season.number,
     title: season.title ?? undefined,
-    airedEpisodes: season.aired_episodes ?? undefined,
     episodes: (season.episodes ?? []).map((episode) => ({
       id: episode.ids.trakt,
       season: episode.season,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hideOptionsFor, progressHideParams, readProgressHide } from './progressHide.ts';
+import { hideOptionsFor, readProgressHide } from './progressHide.ts';
 
 describe('readProgressHide', () => {
   it('should read the saved toggles and drop unknown ones', () => {
@@ -17,14 +17,5 @@ describe('readProgressHide', () => {
     const search = new URLSearchParams();
     expect(readProgressHide({ cookie: 'rewatching,ended', search, type: 'library' })).toEqual(['ended']);
     expect(hideOptionsFor('library').map(({ id }) => id)).not.toContain('rewatching');
-  });
-});
-
-describe('progressHideParams', () => {
-  it('should map each toggle onto its worker param', () => {
-    expect(progressHideParams(['not-completed', 'rewatching'])).toEqual({
-      hide_not_completed: 'true',
-      hide_rewatching: 'true',
-    });
   });
 });

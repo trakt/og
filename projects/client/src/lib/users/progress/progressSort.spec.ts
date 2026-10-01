@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { apiProgressSort, progressSort, progressSortLabel } from './progressSort.ts';
+import { literalProgressSort, progressSort, progressSortLabel } from './progressSort.ts';
 
 describe('progressSort', () => {
   it('should default to Activity Date ascending', () => {
@@ -25,7 +25,7 @@ describe('progressSort', () => {
     });
   });
 
-  it('should fall back to the default for a name the worker rejects', () => {
+  it('should fall back to the default for an unknown name', () => {
     expect(progressSort({ segments: 'dropped' })).toEqual({ by: 'added', how: 'asc', supported: true });
   });
 });
@@ -42,16 +42,16 @@ describe('progressSortLabel', () => {
   });
 });
 
-describe('apiProgressSort', () => {
-  it("should flip the sorts whose own order is descending, since the worker's is literal", () => {
-    expect(apiProgressSort({ by: 'added', how: 'asc' })).toEqual({ by: 'added', how: 'desc' });
-    expect(apiProgressSort({ by: 'completed', how: 'desc' })).toEqual({ by: 'completed', how: 'asc' });
-    expect(apiProgressSort({ by: 'title', how: 'asc' })).toEqual({ by: 'title', how: 'asc' });
-    expect(apiProgressSort({ by: 'episodes', how: 'desc' })).toEqual({ by: 'episodes', how: 'desc' });
+describe('literalProgressSort', () => {
+  it('should flip the sorts whose own order is descending, as a literal key order', () => {
+    expect(literalProgressSort({ by: 'added', how: 'asc' })).toEqual({ by: 'added', how: 'desc' });
+    expect(literalProgressSort({ by: 'completed', how: 'desc' })).toEqual({ by: 'completed', how: 'asc' });
+    expect(literalProgressSort({ by: 'title', how: 'asc' })).toEqual({ by: 'title', how: 'asc' });
+    expect(literalProgressSort({ by: 'episodes', how: 'desc' })).toEqual({ by: 'episodes', how: 'desc' });
   });
 
   it('should resolve an old name to the sort it meant', () => {
-    expect(apiProgressSort({ by: 'least-plays', how: 'asc' })).toEqual({ by: 'plays', how: 'asc' });
-    expect(apiProgressSort({ by: 'most-time', how: 'asc' })).toEqual({ by: 'time', how: 'asc' });
+    expect(literalProgressSort({ by: 'least-plays', how: 'asc' })).toEqual({ by: 'plays', how: 'asc' });
+    expect(literalProgressSort({ by: 'most-time', how: 'asc' })).toEqual({ by: 'time', how: 'asc' });
   });
 });

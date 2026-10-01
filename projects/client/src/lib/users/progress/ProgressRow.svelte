@@ -1,16 +1,14 @@
 <!--
-  One show on the progress page: the poster, then the title, the tick bar and
-  what's been watched (or collected), the seasons to open under it, and the next episode's fanart card on the right.
-  On your own profile the title has rewatch and drop (or hide, on Library) icons: drop and hide take the row off the
-  page as they save, and rewatch reloads it. A watch (or collect) on the next episode reloads it too, at once with the
-  "refresh" setting on, otherwise from a "Next Episode" cover . A dropped show (the Dropped
-  tab) says when you dropped it and has no drop icon; rewatching it also undrops it.
+  One show on the progress page: the poster, then the title, the tick bar and what's been watched (or collected),
+  then the seasons to open under it. Opening the seasons reads the show's catalog once (`onexpand`), and the expanded
+  row adds the next episode's fanart card on the right and the last episode's title. On your own profile the title
+  has rewatch and drop (or hide, on Library) icons; the row recomputes from the overlay as they save, so a drop or a
+  hide takes it off the page and a rewatch resets it. A dropped show (the Dropped tab) says when you dropped it and
+  has no drop icon.
 -->
 <script lang="ts">
-import { toast } from '$lib/components/toast/toast.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
-import RefreshCover from '$lib/components/media/RefreshCover.svelte';
 import { removeCard } from '$lib/components/media/removeCard';
 import RewatchingBadge from '$lib/components/media/RewatchingBadge.svelte';
 import TickBar from '$lib/components/media/TickBar.svelte';
@@ -25,81 +23,31 @@ import type { DatePreferences } from '$lib/settings/DatePreferences';
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
 import type { ProgressType } from './progressTypes.ts';
 import ProgressSeasons from './ProgressSeasons.svelte';
-import type { ProgressRow } from './toProgressRow.ts';
+import type { ProgressNext, ProgressRow } from './toProgressRow.ts';
 
 interface Props {
   row: ProgressRow;
   type: ProgressType;
   simple: boolean;
-  /** Your own profile: the rewatch, drop and hide icons show. */
-  isSelf: boolean;
   datePreferences: DatePreferences;
-  /** Reads the show's row again. Left out (someone else's profile), nothing reloads. */
-  refresh?: (row: ProgressRow, options: { rewatched: boolean }) => Promise<ProgressRow>;
-  /** The viewer's "refresh" setting: reload right after a watch instead of offering "Next Episode". */
-  autoRefresh?: boolean;
-  /** A drop or hide started: the page takes the row out, and puts it back if the save doesn't go through. */
-  onremove?: (saved: Promise<boolean>) => void;
+  /** The row opened: read the show's catalog. */
+  onexpand?: () => void;
+  /** The catalog read is in flight. */
+  expanding?: boolean;
 }
 
-const { row: initial, type, simple, isSelf, datePreferences, refresh, autoRefresh = false, onremove }: Props = $props();
+const { row, type, simple, datePreferences, onexpand, expanding = false }: Props = $props();
+const kind = $derived(type === 'library' ? 'library' : 'watched');
 
-// The page's row until a reload replaces it.
-let row = $derived(initial);
-let refreshing = $state(false);
-let needsRefresh = $state(false);
+let open = $state(false);
 let article = $state<HTMLElement>();
 // Read only when the row leaves: paging and filtering aren't removals.
 let removedByAction = false;
-$effect(() => {
-  void initial;
-  refreshing = false;
-  needsRefresh = false;
-});
 
 const showTarget = $derived({ type: 'show' as const, id: row.id, title: row.title });
-const next = $derived(row.next);
-const viewerState = $derived(overlay.state(next.target.type, next.target.id));
-const fill = $derived(quickIconFill({ state: viewerState, airedEpisodes: next.airedEpisodes, datePreferences }));
+const next = $derived(open ? row.next : undefined);
 const plural = (n: number, word: string) => `${word}${n === 1 ? '' : 's'}`;
 const count = (n: number) => n.toLocaleString('en-US');
-const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-async function load(rewatched: boolean) {
-  if (!refresh) return;
-  const source = initial;
-  // OG kept the row dimmed for at least half a second, so a quick reload doesn't flash.
-  const [result] = await Promise.allSettled([refresh(row, { rewatched }), pause(500)]);
-  if (source !== initial) return;
-  refreshing = false;
-  if (result.status === 'fulfilled') {
-    row = result.value;
-    needsRefresh = false;
-    return;
-  }
-  needsRefresh = true;
-  toast.error('Doh! There was an error refreshing this show. Please try Next Episode again.');
-}
-
-function reload() {
-  if (refreshing) return;
-  refreshing = true;
-  void load(false);
-}
-
-/** After a watch (or collect) of the next episode. A removal leaves the row as it is. */
-function watched(at: string | null | undefined) {
-  if (!refresh || typeof at !== 'string') return;
-  needsRefresh = true;
-  if (autoRefresh) reload();
-}
-
-async function rewatch(saved: Promise<boolean>) {
-  if (!refresh) return;
-  refreshing = true;
-  if (await saved) return load(true);
-  refreshing = false;
-}
 
 /** Drop and hide: the focus moves to the next row's title before this one fades out. */
 function remove(saved: Promise<boolean>) {
@@ -108,7 +56,6 @@ function remove(saved: Promise<boolean>) {
   const nextRow = [...rows.slice(index + 1), ...rows.slice(0, index).toReversed()].at(0);
   const section = article?.closest<HTMLElement>('section');
   removedByAction = true;
-  onremove?.(saved);
   if (nextRow) {
     nextRow.querySelector<HTMLElement>('a.titles-link')?.focus({ preventScroll: true });
   } else if (section) {
@@ -119,14 +66,19 @@ function remove(saved: Promise<boolean>) {
     if (!kept) removedByAction = false;
   });
 }
+
+function toggle(opened: boolean) {
+  open = opened;
+  if (opened) onexpand?.();
+}
 </script>
 
 <!-- Show, season and episode pages are OG routes og hasn't all built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 {#snippet last(episode: NonNullable<ProgressRow['last']>)}
-  <a class="last-episode"
-  href={episode.href}>{episode.title ? `${episode.number} ${episode.title}` : episode.number}</a>{episode.relative ? ` ${episode.relative}` : ''} on {episode.date}.
+  {#if episode.href}<a class="last-episode"
+  href={episode.href}>{episode.title ? `${episode.number} ${episode.title}` : episode.number}</a>{/if}{episode.relative ? ` ${episode.relative}` : ''} on {episode.date}.
 {/snippet}
 
 {#snippet action(visibility: 'rewatch' | 'drop' | 'hide', svg: string)}
@@ -134,14 +86,41 @@ function remove(saved: Promise<boolean>) {
   <span class={['action', visibility]}>
   <VisibilityControl target={showTarget} action={visibility}
     section={visibility === 'hide' ? 'progress_collected' : undefined}
-    variant="badge" placement="top" onsaving={visibility === 'rewatch' ? rewatch : remove}>
+    variant="badge" placement="top" onsaving={visibility === 'rewatch' ? undefined : remove}>
     <Icon {svg} />
   </VisibilityControl>
 </span>
 {/snippet}
 
-<article bind:this={article} class={['progress-row', { loading: refreshing }]} aria-labelledby="progress-{row.id}"
-  aria-busy={refreshing} out:removeCard|global={() => removedByAction}>
+{#snippet nextCard(next: ProgressNext)}
+  <div class="next">
+  <FanartCard
+    href={next.href}
+    title={next.title}
+    year={next.year}
+    number={next.number}
+    image={next.image}
+    tags={next.tags}
+    userRating={overlay.state(next.target.type, next.target.id).rating}
+    icons={{
+        fill: quickIconFill({
+          state: overlay.state(next.target.type, next.target.id),
+          airedEpisodes: next.airedEpisodes,
+          datePreferences,
+        }),
+        rating: next.rating,
+        ratingTarget: next.target,
+        watchTarget: { ...next.target, airedEpisodes: next.airedEpisodes, season: next.season },
+        listTarget: next.target,
+        watchNow: 'play',
+        listLabel: next.target.type === 'episode' ? 'Add to list' : 'Add to watchlist',
+      }}
+  />
+</div>
+{/snippet}
+
+<article bind:this={article} class="progress-row" aria-labelledby="progress-{row.id}"
+  out:removeCard|global={() => removedByAction}>
   <a class="poster" href={row.href} tabindex="-1" aria-hidden="true">
     {#if row.poster}
       <img src={row.poster} alt="" loading="lazy" decoding="async" />
@@ -154,17 +133,17 @@ function remove(saved: Promise<boolean>) {
   <div class="main-info">
     <div class="show-title">
       <h3 class="title" id="progress-{row.id}"><a class="titles-link" href={row.href}>{row.title}</a></h3>
-      {#if isSelf && type === 'watched'}{@render action('rewatch', backward)}{/if}
+      {#if kind === 'watched'}{@render action('rewatch', backward)}{/if}
       <!-- Nothing to drop on the Dropped tab. -->
-      {#if isSelf && type === 'watched' && !row.droppedOn}
+      {#if type === 'watched'}
         {@render action('drop', circleMinus)}
-      {:else if isSelf && type === 'library'}
+      {:else if type === 'library'}
         {@render action('hide', lightBan)}
       {/if}
     </div>
 
     <TickBar runs={row.ticks} percent={row.percent} {simple}
-      label={`${row.title}: ${row.percent}% ${type === 'watched' ? 'watched' : 'in your library'}`} />
+      label={`${row.title}: ${row.percent}% ${kind === 'watched' ? 'watched' : 'in your library'}`} />
 
     {#if row.droppedOn}
       <p class="dropped"><Icon svg={regularCircleMinus} />Dropped on {row.droppedOn}</p>
@@ -174,7 +153,7 @@ function remove(saved: Promise<boolean>) {
     {/if}
 
     <p class="summary">
-      {#if type === 'watched'}
+      {#if kind === 'watched'}
         Watched <strong>{count(row.completed)}</strong> of <strong>{count(row.aired)}</strong>
         {plural(row.aired, 'episode')} for <strong>{count(row.plays)}</strong> {plural(row.plays, 'play')}
         (<strong>{row.watchedTime}</strong>){row.left === 0 ? '. Great job, every episode is watched!' : ' which leaves '}{#if
@@ -191,35 +170,13 @@ function remove(saved: Promise<boolean>) {
       {/if}
     </p>
 
-    <ProgressSeasons id={row.id} title={row.title} seasons={row.seasons} {type} {simple} {isSelf} />
+    <ProgressSeasons id={row.id} title={row.title} seasons={row.seasons} type={kind} {simple} bind:open
+      loading={expanding} ontoggle={toggle} />
   </div>
 
-  <div class="next">
-    <FanartCard
-      href={next.href}
-      title={next.title}
-      year={next.year}
-      number={next.number}
-      image={next.image}
-      tags={next.tags}
-      userRating={viewerState.rating}
-      icons={{
-        fill,
-        rating: next.rating,
-        ratingTarget: next.target,
-        watchTarget: { ...next.target, airedEpisodes: next.airedEpisodes, season: next.season },
-        listTarget: next.target,
-        watchNow: 'play',
-        listLabel: next.target.type === 'episode' ? 'Add to list' : 'Add to watchlist',
-        onWatchSave: type === 'watched' ? watched : undefined,
-        onCollectionSave: type === 'library' ? watched : undefined,
-      }}
-    >
-      {#snippet fanartOverlay()}
-        {#if refreshing || needsRefresh}<RefreshCover title={row.title} {refreshing} onrefresh={reload} />{/if}
-      {/snippet}
-    </FanartCard>
-  </div>
+  {#if next}
+    {@render nextCard(next)}
+  {/if}
 </article>
 
 <style>
@@ -233,10 +190,6 @@ function remove(saved: Promise<boolean>) {
   align-items: start;
   column-gap: var(--gutter);
   margin-block: var(--progress-row-margin);
-
-  &.loading {
-    opacity: var(--opacity-progress-loading);
-  }
 }
 
 .poster {
