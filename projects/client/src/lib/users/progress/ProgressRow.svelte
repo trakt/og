@@ -151,13 +151,10 @@ function toggle(opened: boolean) {
 </article>
 
 <style>
-/* `.row.posters.fanarts.twenty-four-cols`: the poster in 3 of 24 columns, the card in 6, the text between. */
+/* The poster in 3 of 24 columns, the text in the rest. OG's fanart card column is gone: the panel's banner took its job. */
 .progress-row {
   display: grid;
-  grid-template-columns:
-    calc((100% + var(--gutter)) / 8 - var(--gutter))
-    1fr
-    calc((100% + var(--gutter)) / 4 - var(--gutter));
+  grid-template-columns: calc((100% + var(--gutter)) / 8 - var(--gutter)) 1fr;
   align-items: start;
   column-gap: var(--gutter);
   margin-block: var(--progress-row-margin);
@@ -283,7 +280,7 @@ function toggle(opened: boolean) {
   margin-inline-end: var(--progress-dropped-icon-gap);
 }
 
-/* Its own row under the text, out to the card column, so opening it moves nothing above. */
+/* Its own row under the text, so opening it moves nothing above. */
 .panel {
   grid-column: 2 / -1;
   min-inline-size: 0;
@@ -295,10 +292,10 @@ function toggle(opened: boolean) {
   }
 }
 
-/* OG hid the poster below desktop and let the card take a third. */
+/* OG hid the poster below desktop. */
 @media (width < 992px) {
   .progress-row {
-    grid-template-columns: 1fr calc((100% + var(--gutter)) / 3 - var(--gutter));
+    grid-template-columns: 1fr;
   }
 
   .poster {
@@ -312,7 +309,6 @@ function toggle(opened: boolean) {
 
 @media (width < 768px) {
   .progress-row {
-    grid-template-columns: 1fr;
     row-gap: var(--space-lg-block);
   }
 }
