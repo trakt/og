@@ -39,13 +39,14 @@ describe('util: pullRequestBody', () => {
     expect(body).toContain('- `typescript` stays on 6.0.3 (7.0.2 is out): svelte-check needs 6');
     expect(body).toContain('`workerd` moved from 1.20260926.1 to 1.20261001.0');
     expect(body).not.toContain('# Major');
-    expect(body).toContain('auto-merges');
+    expect(body).toContain('deno task client:land <pr>');
+    expect(body).toContain('No issue: dependency maintenance.');
   });
 
   it('should say a run with majors waits for a human', () => {
     const body = pullRequestBody(WITH_MAJOR);
     expect(body).toContain('# Major\n\n- `globals` 17.12.0 → 18.0.0');
-    expect(body).toContain('`needs-human`');
+    expect(body).toContain('Keep the PR as a draft until a human has reviewed them');
   });
 
   it('should never use em or en dashes', () => {

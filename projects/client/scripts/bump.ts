@@ -1,8 +1,8 @@
-// Weekly dependency bump (.github/workflows/deps.yml). Moves every exact pin in package.json to the newest release
+// Dependency bump. Moves every exact pin in package.json to the newest release
 // Deno allows, keeps the ones that pass `deno task ci`, and bisects out the ones that don't.
 // Usage: deno task bump [--dry-run] [--out <dir>]
 // --dry-run only print what each pin would move to; touches nothing.
-// --out where to write title.txt, body.md and issues.json for the workflow (default: a temp dir).
+// --out where to write title.txt, body.md and issues.json for review (default: a temp dir).
 import { applyUpgrades } from './deps/applyUpgrades.ts';
 import { bisectUpgrades } from './deps/bisectUpgrades.ts';
 import type { BisectResult } from './deps/BisectResult.ts';
