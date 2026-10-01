@@ -1,7 +1,7 @@
 // FIXME(zod-4): og pins zod 3.25.76, the version @trakt/api 0.6.0 already depends on, so the project has one zod.
 // That release ships the v4 API under `zod/v4`, which is what this code uses. When @trakt/api moves to zod 4, bump og's
 // zod to the same major and import from `zod` instead. Don't add a second zod install before then. A weekly bump that
-// moves zod to 4 arrives as a needs-human draft (deps.yml): decline it until @trakt/api has moved.
+// moves zod to 4 needs human review: decline it until @trakt/api has moved.
 import { z } from 'zod/v4';
 
 const image = z.object({ full: z.string().nullish(), medium: z.string().nullish(), thumb: z.string().nullish() });
