@@ -1,4 +1,5 @@
 import type { CollectedItem } from './CollectedItem.ts';
+import type { HiddenProgress } from './HiddenProgress.ts';
 
 type Ids = ReadonlySet<number>;
 type ById<T> = ReadonlyMap<number, T>;
@@ -28,6 +29,8 @@ export type OverlaySlices = {
   };
   /** Show ids. */
   dropped: Ids | ById<string>;
+  /** Shows and seasons hidden from the Watched and Library progress tabs. */
+  progressHidden: Readonly<Record<'watched' | 'collected', HiddenProgress>>;
   /** Optimistic hides on the current page, section to type:id keys. Never persisted as server truth. */
   hidden: ReadonlyMap<string, ReadonlySet<string>>;
   /** Ids in any of the user's own or collaborative lists. */

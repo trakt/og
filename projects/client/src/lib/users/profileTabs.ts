@@ -20,11 +20,16 @@ const TABS = [
   { label: 'Network', segment: 'network', also: [] },
 ] as const;
 
-/** The tabs for `slug`, with the one `pathname` is on marked current. OG matched on the third path segment. */
-export function profileTabs({ slug, pathname }: { slug: string; pathname: string }): readonly ProfileTab[] {
+/**
+ * The tabs for `slug`, with the one `pathname` is on marked current. OG matched on the third path segment. Progress is
+ * your own profile's only.
+ */
+export function profileTabs(
+  { slug, pathname, isSelf }: { slug: string; pathname: string; isSelf: boolean },
+): readonly ProfileTab[] {
   const section = pathname.split('/').at(3) ?? '';
 
-  return TABS.map(({ label, segment, also }) => ({
+  return TABS.filter(({ segment }) => isSelf || segment !== 'progress').map(({ label, segment, also }) => ({
     label,
     href: segment ? `/users/${slug}/${segment}` : `/users/${slug}`,
     current: section === segment || (also as readonly string[]).includes(section),

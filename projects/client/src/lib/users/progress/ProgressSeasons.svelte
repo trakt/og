@@ -2,7 +2,8 @@
   The seasons band under a progress row: "+ view
   seasons" opens a row per season with its own tick bar, a season's toggle opens its "1x05" episode chips, and
   "+ view all" opens every season at once. OG's toggles were spans; these are buttons that say whether they're open.
-  On your own profile a season's hide icon takes it out of your progress (`progress_watched` or `progress_collected`),
+  The row reads the show's catalog as the band opens, so it says it's loading until the seasons are in.
+  A season's hide icon takes it out of your progress (`progress_watched` or `progress_collected`),
   and the season leaves the list as the hide saves.
 -->
 <script lang="ts">
@@ -31,16 +32,19 @@ interface Props {
   seasons: readonly ProgressSeason[];
   type: ProgressType;
   simple: boolean;
-  /** Your own profile: each season gets the hide icon. */
-  isSelf: boolean;
+  /** The band is open. */
+  open?: boolean;
+  /** The seasons are still loading. */
+  loading?: boolean;
+  /** The band opened or closed. */
+  ontoggle?: (open: boolean) => void;
 }
 
-const { id, title, seasons, type, simple, isSelf }: Props = $props();
+let { id, title, seasons, type, simple, open = $bindable(false), loading = false, ontoggle }: Props = $props();
 const removals = createProgressRemovals<number>();
 const shown = $derived(seasons.filter((season) => !removals.has(season.number)));
 let list = $state<HTMLUListElement>();
 
-let open = $state(false);
 const openSeasons = new SvelteSet<number>();
 
 function toggleSeason(number: number) {
@@ -48,9 +52,22 @@ function toggleSeason(number: number) {
   else openSeasons.add(number);
 }
 
-function openAll() {
-  open = true;
+function setOpen(next: boolean) {
+  open = next;
+  ontoggle?.(next);
+}
+
+// "view all" asked before the seasons loaded: open them as they arrive.
+let wantsAll = $state(false);
+$effect(() => {
+  if (!wantsAll || seasons.length === 0) return;
   for (const season of seasons) openSeasons.add(season.number);
+  wantsAll = false;
+});
+
+function openAll() {
+  wantsAll = true;
+  if (!open) setOpen(true);
 }
 
 /** The focus moves to the next season's hide icon (or the seasons toggle) before this one fades out. */
@@ -99,10 +116,11 @@ const spoken = (episode: ProgressEpisode) =>
 
 <div class="seasons">
   <button type="button" class="toggle link" aria-expanded={open} aria-controls="seasons-{id}"
-    onclick={() => (open = !open)}><Icon svg={open ? minus : plus} />view seasons</button>
+    onclick={() => setOpen(!open)}><Icon svg={open ? minus : plus} />view seasons</button>
   <button type="button" class="toggle link" onclick={openAll}><Icon svg={plus} />view all</button>
 
-  <ul bind:this={list} class="season-list" id="seasons-{id}" hidden={!open}>
+  {#if open && loading}<p class="loading" role="status">Loading seasons…</p>{/if}
+  <ul bind:this={list} class="season-list" id="seasons-{id}" hidden={!open} aria-busy={loading}>
     {#each shown as season (season.number)}
       {@const expanded = openSeasons.has(season.number)}
       <li class="season" out:removeCard={() => true}>
@@ -117,14 +135,12 @@ const spoken = (episode: ProgressEpisode) =>
                 {...tooltip}><Icon svg={chevron} fixedWidth /></a>
             {/snippet}
           </Tooltip>
-          {#if isSelf}
-            <span class="hide">
-              <VisibilityControl
-                target={{ type: 'season', id, title: `${title} ${season.title}`, season: { show: id, number: season.number } }}
-                action="hide" section={type === 'watched' ? 'progress_watched' : 'progress_collected'} variant="badge"
-                onsaving={(saved) => hide(season.number, saved)}><Icon svg={ban} fixedWidth /></VisibilityControl>
-            </span>
-          {/if}
+          <span class="hide">
+            <VisibilityControl
+              target={{ type: 'season', id, title: `${title} ${season.title}`, season: { show: id, number: season.number } }}
+              action="hide" section={type === 'watched' ? 'progress_watched' : 'progress_collected'} variant="badge"
+              onsaving={(saved) => hide(season.number, saved)}><Icon svg={ban} fixedWidth /></VisibilityControl>
+          </span>
           <span class="episode-count">{season.summary}</span>
         </div>
         <TickBar runs={season.ticks} percent={season.percent} {simple} size="season"
@@ -151,6 +167,12 @@ ul {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.loading {
+  margin: var(--space-xs-block) 0 0;
+  color: var(--color-text-muted);
+  font-style: italic;
 }
 
 .toggle {

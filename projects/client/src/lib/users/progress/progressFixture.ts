@@ -1,4 +1,8 @@
-import type { ProgressRowData } from './progressRowsSchema.ts';
+import type { CollectedItem } from '../../overlay/CollectedItem.ts';
+import type { CachedShow } from '../../shows/cache/CachedShow.ts';
+import type { ShowCatalog } from '../../shows/cache/ShowCatalog.ts';
+import type { ProgressItem } from './ProgressItem.ts';
+import { toProgressItem } from './toProgressItem.ts';
 
 type Sample = {
   id: number;
@@ -14,7 +18,8 @@ type Sample = {
   /** Extra plays on top of one a watched episode. */
   rewatches?: number;
   resetAt?: string;
-  next?: { season: number; number: number; title: string; type?: string };
+  /** An episode type, by season and number. */
+  types?: Readonly<Record<string, string>>;
 };
 
 // Public shows with made-up progress, for the specs and the design demo. No artwork, like local OG.
@@ -43,7 +48,6 @@ const samples: readonly Sample[] = [
       false,
     ]],
     rewatches: 2,
-    next: { season: 2, number: 5, title: 'Breakage' },
   },
   {
     id: 1390,
@@ -55,7 +59,7 @@ const samples: readonly Sample[] = [
     runtime: 55,
     seasons: [Array(10).fill(true), Array(10).fill(true), Array(10).fill(false)],
     resetAt: '2026-07-02T20:00:00.000Z',
-    next: { season: 3, number: 1, title: 'Valar Dohaeris', type: 'season_premiere' },
+    types: { '3x1': 'season_premiere' },
   },
   {
     id: 1421,
@@ -81,99 +85,94 @@ const samples: readonly Sample[] = [
 ];
 
 const at = (season: number, number: number) => new Date(Date.UTC(2026, 8, 1 + season, 20, number)).toISOString();
+const episodeId = (sample: Sample, season: number, number: number) => sample.id * 100 + season * 20 + number;
+const NOW = Date.parse('2026-09-30T20:00:00.000Z');
 
-function toRow(sample: Sample, collected: boolean): ProgressRowData {
-  const episodes = sample.seasons.flatMap((season, s) =>
-    season.map((done, e) => ({ season: s + 1, number: e + 1, done }))
-  );
-  const done = episodes.filter((episode) => episode.done);
-  const plays = done.length + (sample.rewatches ?? 0);
-  const last = done.at(-1);
-  const show = {
-    ids: { trakt: sample.id, slug: sample.slug },
+function toShow(sample: Sample): CachedShow {
+  return {
+    id: sample.id,
+    slug: sample.slug,
     title: sample.title,
     year: sample.year,
     status: sample.status,
-    genres: sample.genres,
+    genres: sample.genres ?? [],
     runtime: sample.runtime,
     rating: 8.4,
-  };
-  const episode = (season: number, number: number, title: string, type?: string) => ({
-    ids: { trakt: sample.id * 100 + season * 20 + number },
-    season,
-    number,
-    title,
-    episode_type: type ?? 'standard',
-    first_aired: at(season, number),
-    runtime: sample.runtime,
-    rating: 8.1,
-  });
-
-  return {
-    show,
-    progress: {
-      aired: episodes.length,
-      completed: done.length,
-      ...(collected ? { last_collected_at: last ? at(last.season, last.number) : null } : {
-        stats: {
-          play_count: plays,
-          minutes_watched: plays * sample.runtime,
-          minutes_left: (episodes.length - done.length) * sample.runtime,
-        },
-        last_watched_at: last ? at(last.season, last.number) : null,
-        reset_at: sample.resetAt ?? null,
-      }),
-      last_episode: last ? episode(last.season, last.number, `Episode ${last.number}`) : null,
-      next_episode: sample.next
-        ? episode(sample.next.season, sample.next.number, sample.next.title, sample.next.type)
-        : null,
-      seasons: sample.seasons.map((season, s) => {
-        const count = season.filter(Boolean).length;
-        return {
-          number: s + 1,
-          title: sample.seasonTitles?.[s] ?? `Season ${s + 1}`,
-          aired: season.length,
-          completed: count,
-          ...(!collected && {
-            stats: {
-              play_count: count,
-              minutes_watched: count * sample.runtime,
-              minutes_left: (season.length - count) * sample.runtime,
-            },
-          }),
-          episodes: season.map((isDone, e) => ({
-            number: e + 1,
-            completed: isDone,
-            ...(collected ? { collected_at: isDone ? at(s + 1, e + 1) : null } : {
-              last_watched_at: isDone ? at(s + 1, e + 1) : null,
-              stats: { play_count: isDone ? 1 : 0, minutes_watched: isDone ? sample.runtime : 0 },
-            }),
-          })),
-        };
-      }),
-    },
+    airedEpisodes: sample.seasons.flat().length,
+    fetchedAt: NOW,
+    complete: true,
   };
 }
 
-const dropped = [
-  { id: 1390, at: '2025-12-01T21:40:00.000Z' },
-  { id: 60300, at: '2025-04-17T17:53:00.000Z' },
-];
+function toCatalog(sample: Sample): ShowCatalog {
+  return {
+    id: sample.id,
+    fetchedAt: NOW,
+    seasons: sample.seasons.map((season, s) => ({
+      number: s + 1,
+      title: sample.seasonTitles?.[s] ?? `Season ${s + 1}`,
+      episodes: season.map((_, e) => ({
+        id: episodeId(sample, s + 1, e + 1),
+        season: s + 1,
+        number: e + 1,
+        title: `Episode ${e + 1}`,
+        type: sample.types?.[`${s + 1}x${e + 1}`] ?? 'standard',
+        firstAired: at(s + 1, e + 1),
+        runtime: sample.runtime,
+        rating: 8.1,
+      })),
+    })),
+  };
+}
+
+/** Watch dates by season and episode id: one a watched episode, the rewatches on the first one. */
+function toWatched(sample: Sample) {
+  return new Map(sample.seasons.map((season, s) => [
+    s + 1,
+    new Map(season.flatMap((done, e) => {
+      if (!done) return [];
+      const extra = s === 0 && e === 0 ? sample.rewatches ?? 0 : 0;
+      return [[episodeId(sample, s + 1, e + 1), Array.from({ length: 1 + extra }, () => at(s + 1, e + 1))] as const];
+    })),
+  ]));
+}
+
+function toCollected(sample: Sample): ReadonlyMap<number, ReadonlyMap<number, CollectedItem>> {
+  return new Map(sample.seasons.map((season, s) => [
+    s + 1,
+    new Map(season.flatMap((done, e) => done ? [[e + 1, { at: at(s + 1, e + 1) }] as const] : [])),
+  ]));
+}
+
+const dropped = new Map([[1390, '2025-12-01T21:40:00.000Z'], [60300, '2025-04-17T17:53:00.000Z']]);
+
+type Options = { kind: 'watched' | 'library'; expanded: boolean; dropped?: boolean };
+
+function toItem(sample: Sample, { kind, expanded, dropped: onDropped }: Options): ProgressItem {
+  return toProgressItem({
+    kind,
+    show: toShow(sample),
+    watched: toWatched(sample),
+    collected: toCollected(sample),
+    resetAt: kind === 'watched' ? sample.resetAt : undefined,
+    droppedAt: onDropped ? dropped.get(sample.id) : undefined,
+    catalog: expanded ? toCatalog(sample) : undefined,
+    includeSpecials: false,
+    useLastActivity: false,
+    now: NOW,
+  });
+}
 
 /**
- * Sample `/users/:id/progress/watched` and `/collection` rows with `include_seasons=true`, and the `/users/hidden/dropped`
- * rows that drop two of them.
+ * Sample progress for the specs and the design page: each tab's items, collapsed (summary counts) or expanded (with
+ * the show's catalog). Two shows are dropped.
  */
 export const progressFixture = {
-  watched: samples.map((sample) => toRow(sample, false)),
-  collection: samples.map((sample) => toRow(sample, true)),
-  dropped: dropped.flatMap(({ id, at }) => {
-    const sample = samples.find((candidate) => candidate.id === id);
-    if (!sample) return [];
-    return [{
-      hidden_at: at,
-      type: 'show' as const,
-      show: { title: sample.title, year: sample.year, ids: { trakt: sample.id, slug: sample.slug } },
-    }];
-  }),
+  now: NOW,
+  watched: (expanded: boolean) => samples.map((sample) => toItem(sample, { kind: 'watched', expanded })),
+  library: (expanded: boolean) => samples.map((sample) => toItem(sample, { kind: 'library', expanded })),
+  dropped: (expanded: boolean) =>
+    samples.filter(({ id }) => dropped.has(id)).map((sample) =>
+      toItem(sample, { kind: 'watched', expanded, dropped: true })
+    ),
 };

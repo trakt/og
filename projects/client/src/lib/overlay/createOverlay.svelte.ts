@@ -240,6 +240,9 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
      */
     state: (type: MediaType, id: number, season?: SeasonOf): OverlayState => stateOf(slices, type, id, season),
 
+    /** Every slice as it stands, for views that compute from the whole library. Reactive; missing means unknown. */
+    slices: (): Partial<OverlaySlices> => slices,
+
     /** Signs `nextUser` in: drops any other user's records, applies the cache, then checks `last_activities`. */
     start: async (nextUser: string): Promise<void> => {
       if (nextUser === user) return;

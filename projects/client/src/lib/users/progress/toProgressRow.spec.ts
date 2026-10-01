@@ -1,22 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { progressFixture } from './progressFixture.ts';
-import type { ProgressRowData } from './progressRowsSchema.ts';
+import { progressItemFixture } from './progressItemFixture.ts';
+import type { ProgressItem } from './ProgressItem.ts';
+import type { ProgressType } from './progressTypes.ts';
 import { toProgressRow } from './toProgressRow.ts';
 
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'America/Los_Angeles', weekStartDay: 0 } as const;
 const now = new Date('2026-09-30T20:00:00.000Z');
-const byTitle = (rows: readonly ProgressRowData[], title: string) => {
-  const row = rows.find(({ show }) => show.title === title);
-  if (!row) throw new Error(`no fixture for ${title}`);
-  return row;
+const byTitle = (items: readonly ProgressItem[], title: string) => {
+  const item = items.find(({ show }) => show.title === title);
+  if (!item) throw new Error(`no fixture for ${title}`);
+  return item;
 };
-const watched = (title: string) =>
-  toProgressRow({ row: byTitle(progressFixture.watched, title), type: 'watched', datePreferences, now });
+const row = (items: readonly ProgressItem[], title: string, type: ProgressType = 'watched') =>
+  toProgressRow({ item: byTitle(items, title), type, datePreferences, now });
+const expanded = (title: string) => row(progressFixture.watched(true), title);
+const collapsed = (title: string) => row(progressFixture.watched(false), title);
 
 describe('toProgressRow', () => {
-  describe('for watched progress', () => {
-    it('should map the counts, times and last watched episode', () => {
-      expect(watched('Breaking Bad')).toMatchObject({
+  describe('for a collapsed row', () => {
+    it('should map the counts with estimated times and the last watched date', () => {
+      expect(collapsed('Breaking Bad')).toMatchObject({
         id: 1388,
         title: 'Breaking Bad',
         href: '/shows/breaking-bad',
@@ -25,6 +29,23 @@ describe('toProgressRow', () => {
         completed: 11,
         left: 9,
         plays: 13,
+        watchedTime: '~10h 11m',
+        leftTime: '~7h 3m',
+        last: { relative: 'a month ago', date: 'Sep 3, 2026 1:04 PM' },
+        seasons: [],
+        next: undefined,
+      });
+      expect(collapsed('Breaking Bad').last).not.toHaveProperty('number');
+    });
+
+    it('should fill the ticks from the left', () => {
+      expect(collapsed('Breaking Bad').ticks).toEqual([{ done: true, count: 11 }, { done: false, count: 9 }]);
+    });
+  });
+
+  describe('for an expanded row', () => {
+    it('should map the exact times and the last watched episode', () => {
+      expect(expanded('Breaking Bad')).toMatchObject({
         watchedTime: '10h 11m',
         leftTime: '7h 3m',
         last: {
@@ -34,18 +55,13 @@ describe('toProgressRow', () => {
           relative: 'a month ago',
           date: 'Sep 3, 2026 1:04 PM',
         },
-        rewatchingSince: undefined,
       });
     });
 
-    it('should draw a tick per episode across the seasons', () => {
-      expect(watched('Breaking Bad').ticks).toEqual([{ done: true, count: 11 }, { done: false, count: 9 }]);
-    });
-
     it('should map each season with its summary and episode chips', () => {
-      const [first, second] = watched('Breaking Bad').seasons;
+      const [first, second] = expanded('Breaking Bad').seasons;
 
-      expect(first).toMatchObject({ title: 'Season 1', percent: 100, summary: '7/7 episodes — 7 plays (5h 29m)' });
+      expect(first).toMatchObject({ title: 'Season 1', percent: 100, summary: '7/7 episodes — 9 plays (7h 3m)' });
       expect(second).toMatchObject({
         title: 'Season 2',
         href: '/shows/breaking-bad/seasons/2',
@@ -66,26 +82,13 @@ describe('toProgressRow', () => {
     });
 
     it('should add a custom season title after its number', () => {
-      expect(watched('The Wire').seasons.at(0)?.title).toBe('Season 1: The Streets');
-    });
-
-    it('should mark a rewatch with its start date', () => {
-      expect(watched('Game of Thrones').rewatchingSince).toBe('July 2, 2026');
-    });
-
-    it('should say when you dropped the show, only on the Dropped tab', () => {
-      const row = byTitle(progressFixture.watched, 'Severance');
-      const dropped = toProgressRow({ row, type: 'watched', datePreferences, now, droppedAt: '2025-04-18T05:53:00Z' });
-
-      // In the viewer's time zone, like OG's `allow_conversion`.
-      expect(dropped.droppedOn).toBe('April 17, 2025');
-      expect(watched('Severance').droppedOn).toBeUndefined();
+      expect(expanded('The Wire').seasons.at(0)?.title).toBe('Season 1: The Streets');
     });
 
     it('should card the next episode with its premiere and air date', () => {
-      expect(watched('Game of Thrones').next).toEqual({
+      expect(expanded('Game of Thrones').next).toEqual({
         href: '/shows/game-of-thrones/seasons/3/episodes/1',
-        title: 'Valar Dohaeris',
+        title: 'Episode 1',
         number: '3x01',
         image: undefined,
         tags: [
@@ -99,46 +102,46 @@ describe('toProgressRow', () => {
     });
 
     it('should card the show once nothing is left, by its status', () => {
-      expect(watched('The Wire').next).toMatchObject({
+      expect(expanded('The Wire').next).toMatchObject({
         href: '/shows/the-wire',
         title: 'The Wire',
         year: 2002,
         tags: [{ text: 'Ended' }],
         target: { type: 'show', id: 1421 },
       });
-      expect(watched('Severance').next.tags).toEqual([{ text: 'Returns next season!' }]);
+      expect(expanded('Severance').next?.tags).toEqual([{ text: 'Returns next season!' }]);
     });
   });
 
+  it('should mark a rewatch with its start date', () => {
+    expect(collapsed('Game of Thrones').rewatchingSince).toBe('July 2, 2026');
+  });
+
+  it('should say when you dropped the show, only on the Dropped tab', () => {
+    // In the viewer's time zone, like OG's `allow_conversion`.
+    expect(row(progressFixture.dropped(false), 'Severance', 'dropped').droppedOn).toBe('April 17, 2025');
+    expect(collapsed('Severance').droppedOn).toBeUndefined();
+  });
+
   describe('for library progress', () => {
-    const row = toProgressRow({
-      row: byTitle(progressFixture.collection, 'Breaking Bad'),
-      type: 'library',
-      datePreferences,
-      now,
-    });
+    const library = row(progressFixture.library(true), 'Breaking Bad', 'library');
 
     it('should use the collected dates and skip the plays', () => {
-      expect(row).toMatchObject({ completed: 11, plays: 0, rewatchingSince: undefined });
-      expect(row.last?.date).toBe('Sep 3, 2026 1:04 PM');
-      expect(row.seasons.at(1)?.summary).toBe('4/13 episodes');
-      expect(row.seasons.at(1)?.episodes.at(0)).not.toHaveProperty('plays');
-      expect(row.seasons.at(1)?.episodes.at(0)).toMatchObject({
+      expect(library).toMatchObject({ completed: 11, plays: 0, rewatchingSince: undefined });
+      expect(library.last?.date).toBe('Sep 3, 2026 1:04 PM');
+      expect(library.seasons.at(1)?.summary).toBe('4/13 episodes');
+      expect(library.seasons.at(1)?.episodes.at(0)).not.toHaveProperty('plays');
+      expect(library.seasons.at(1)?.episodes.at(0)).toMatchObject({
         activity: { prefix: 'Added to library on', date: 'Sep 3, 2026 1:01 PM' },
       });
     });
   });
 
-  it('should fill from the left without seasons, and read an unknown date as such', () => {
-    const base = byTitle(progressFixture.watched, 'Breaking Bad');
-    const row = toProgressRow({
-      row: { ...base, progress: { ...base.progress, seasons: null, last_watched_at: '1970-01-01T00:00:00.000Z' } },
-      type: 'watched',
-      datePreferences,
-      now,
+  it('should read an unknown date as such', () => {
+    const item = progressItemFixture(1, { lastAt: '1970-01-01T00:00:00.000Z' });
+    expect(toProgressRow({ item, type: 'watched', datePreferences, now }).last).toEqual({
+      relative: undefined,
+      date: 'Unknown date',
     });
-
-    expect(row.ticks).toEqual([{ done: true, count: 11 }, { done: false, count: 9 }]);
-    expect(row.last).toMatchObject({ relative: undefined, date: 'Unknown date' });
   });
 });

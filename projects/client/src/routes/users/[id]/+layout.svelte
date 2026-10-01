@@ -26,7 +26,7 @@ $effect(() => {
 // A VIP owner's list page puts its first item's fanart on the cover.
 const listCover = $derived(typeof page.data.listCover === 'string' ? page.data.listCover : undefined);
 
-const tabs = $derived(profileTabs({ slug: data.profile.slug, pathname: page.url.pathname }));
+const tabs = $derived(profileTabs({ slug: data.profile.slug, pathname: page.url.pathname, isSelf: data.isSelf }));
 </script>
 
 <svelte:head>

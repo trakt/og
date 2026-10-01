@@ -1,8 +1,8 @@
 <!--
   The summary strip on the right of the progress subnav: on Watched, the percent
   watched with "133/154 episodes" under it on hover and the time left with its episode count; on Library, the
-  percent in your library. Then the show count. `totals` streams in: until it lands, or when it can't be counted,
-  the strip keeps to the show count.
+  percent in your library. Then the show count. Until the rows are computed the strip keeps to the show count. The
+  time left reads "~" while it's an estimate from show runtimes.
 -->
 <script lang="ts">
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
@@ -17,9 +17,9 @@ import type { ProgressType } from './progressTypes.ts';
 
 interface Props {
   type: ProgressType;
-  /** Every show on every page, from `X-Pagination-Item-Count`. */
+  /** Every show on every page. */
   shows: number;
-  totals: Promise<ProgressTotals | null>;
+  totals: ProgressTotals | null;
 }
 
 const { type, shows, totals }: Props = $props();
@@ -42,17 +42,17 @@ const plural = (n: number, word: string) => `${word}${n === 1 ? '' : 's'}`;
 {/snippet}
 
 <div class="progress-summary">
-  {#await totals then resolved}
-    {#if resolved && type === 'watched'}
-      {@render stat('Watched', check, `${resolved.percent}%`,
-        `${number(resolved.completed)}/${number(resolved.aired)} ${plural(resolved.aired, 'episode')}`, 'watched')}
-      {@render stat('Time left to watch', timePlay, formatRuntime(resolved.minutesLeft),
-        `${number(resolved.left)} ${plural(resolved.left, 'episode')}`, 'time')}
-    {:else if resolved}
-      {@render stat('Added to Library', collection, `${resolved.percent} %`,
-        `${number(resolved.completed)}/${number(resolved.aired)} ${plural(resolved.aired, 'episode')}`, 'library')}
+  {#if totals}
+    {#if type === 'watched'}
+      {@render stat('Watched', check, `${totals.percent}%`,
+        `${number(totals.completed)}/${number(totals.aired)} ${plural(totals.aired, 'episode')}`, 'watched')}
+      {@render stat('Time left to watch', timePlay, `${totals.exact ? '' : '~'}${formatRuntime(totals.minutesLeft)}`,
+        `${number(totals.left)} ${plural(totals.left, 'episode')}`, 'time')}
+    {:else}
+      {@render stat('Added to Library', collection, `${totals.percent} %`,
+        `${number(totals.completed)}/${number(totals.aired)} ${plural(totals.aired, 'episode')}`, 'library')}
     {/if}
-  {/await}
+  {/if}
   <Tooltip text={plural(shows, 'Show')}>
     {#snippet trigger(tooltip)}
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->

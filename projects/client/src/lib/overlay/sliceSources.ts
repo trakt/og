@@ -1,3 +1,4 @@
+import { loadHiddenProgress } from './loadHiddenProgress.ts';
 import { loadHiddenShows } from './loadHiddenShows.ts';
 import { collectionMetadataSchema } from '../components/collection/collectionMetadataSchema.ts';
 import { loadFavoriteRows } from '../favorites/loadFavoriteRows.ts';
@@ -224,6 +225,16 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
   dropped: {
     activity: (a) => `${join(a.shows?.dropped_at)}|dates-v1`,
     load: (get) => loadHiddenShows(get, 'dropped'),
+  },
+  progressHidden: {
+    activity: (a) => join(a.shows?.hidden_at, a.seasons?.hidden_at),
+    load: async (get) => {
+      const [watched, collected] = await Promise.all([
+        loadHiddenProgress(get, 'progress_watched'),
+        loadHiddenProgress(get, 'progress_collected'),
+      ]);
+      return { watched, collected };
+    },
   },
   hidden: {
     activity: () => 'session',

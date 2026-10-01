@@ -16,7 +16,6 @@ export type CatalogEpisode = {
 export type CatalogSeason = {
   readonly number: number;
   readonly title?: string;
-  readonly airedEpisodes?: number;
   readonly episodes: readonly CatalogEpisode[];
 };
 

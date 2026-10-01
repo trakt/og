@@ -1,12 +1,12 @@
 import type { ProgressType } from './progressTypes.ts';
 
-/** OG's HIDE toggles under the progress eye, each a worker query param. */
+/** OG's HIDE toggles under the progress eye (`filterProgress` applies them). */
 export const progressHideOptions = [
-  { id: 'completed', label: 'Completed', param: 'hide_completed' },
-  { id: 'not-completed', label: 'Not Completed', param: 'hide_not_completed' },
-  { id: 'ended', label: 'Ended / Canceled', param: 'hide_ended' },
-  { id: 'airing', label: 'Currently Airing', param: 'hide_airing' },
-  { id: 'rewatching', label: 'Rewatching', param: 'hide_rewatching' },
+  { id: 'completed', label: 'Completed' },
+  { id: 'not-completed', label: 'Not Completed' },
+  { id: 'ended', label: 'Ended / Canceled' },
+  { id: 'airing', label: 'Currently Airing' },
+  { id: 'rewatching', label: 'Rewatching' },
 ] as const;
 
 export type ProgressHide = (typeof progressHideOptions)[number]['id'];
@@ -33,11 +33,4 @@ export function readProgressHide({ cookie, search, type }: ReadProgressHideParam
   const allowed = new Set<string>(hideOptionsFor(type).map(({ id }) => id));
 
   return [...new Set([...saved, ...fromUrl])].filter((id) => allowed.has(id));
-}
-
-/** The worker's `hide_*` params for the applied toggles. */
-export function progressHideParams(hide: readonly ProgressHide[]): Record<string, string> {
-  return Object.fromEntries(
-    progressHideOptions.filter(({ id }) => hide.includes(id)).map(({ param }) => [param, 'true']),
-  );
 }
