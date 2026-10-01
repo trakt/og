@@ -1,0 +1,37 @@
+/** A fake viewer's `GET /users/settings` as the form reads it, for the specs and the `/_design/settings` demo. */
+export const settingsFixture = {
+  user: {
+    username: 'og_tester',
+    private: false,
+    name: 'OG Tester',
+    vip: true,
+    ids: { slug: 'og_tester' },
+    location: 'Springfield',
+    about: 'Watching everything, one episode at a time.',
+    age: 36,
+    dob: '1990-04-07',
+    email: 'og_tester@example.com',
+    images: { avatar: { full: '' } },
+  },
+  account: { timezone: 'America/Los_Angeles', date_format: 'mdy', time_24hr: false },
+  browsing: {
+    week_start_day: '1',
+    dark_knight: 'false',
+    watch_popup_action: 'now',
+    hide_watching_now: false,
+    list_popup_action: 'ask',
+    watch_after_rating: 'released',
+    watch_only_once: false,
+    other_site_ratings: true,
+    release_date_ignore_runtime: false,
+    display_early_ratings: false,
+    hide_episode_type_tags: true,
+    rewatching: { adjust_percentage: true },
+    watchnow: {
+      country: 'us',
+      favorites: ['us-netflix', 'us-hbo_max', 'gb-bbc_iplayer', 'us-hulu'],
+      only_favorites: true,
+    },
+    spoilers: { episodes: 'hide', shows: 'hide', movies: 'show', comments: 'show', ratings: 'hide', actors: 'show' },
+  },
+};

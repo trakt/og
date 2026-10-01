@@ -1,2 +1,0 @@
-export const WAKING_HOURS_PER_DAY = 16;
-export const HEATMAP_MAX_INTENSITY_COUNT = 7;

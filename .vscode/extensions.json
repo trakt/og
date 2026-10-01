@@ -1,12 +1,3 @@
 {
-  "recommendations": [
-    "denoland.vscode-deno",
-    "inlang.vs-code-extension",
-    "redhat.vscode-yaml",
-    "phoenisx.cssvar",
-    "jacobcassidy.css-nesting-syntax-highlighting",
-    "svelte.svelte-vscode",
-    "ekstasis.vscode-color-picker-hex",
-    "CucumberOpen.cucumber-official"
-  ]
+  "recommendations": ["svelte.svelte-vscode"]
 }

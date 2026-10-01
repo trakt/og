@@ -1,0 +1,1787 @@
+/*
+ * Design tokens for the classic Trakt layout before the October 2024 retheme.
+ * Sass darken results are precomputed.
+ * Dark mode uses light-dark(<OG>, <dark-knight>). The scheme is light by default;
+ * data-theme="dark" or "system" on <html> switches it.
+ * Breakpoints are reference values because custom properties cannot be used in @media:
+ * xs 480px, sm 768px, md 992px, lg 1200px, xlg 1600px, xxlg 2000px.
+ */
+:root {
+  /* Dashboard next-episode refresh cover (OG users progress overlay). */
+  --on-deck-refresh-gradient: linear-gradient(to bottom, transparent 25%, rgb(0 0 0 / 90%) 100%);
+  --on-deck-refresh-loading: rgb(0 0 0 / 85%);
+  --on-deck-refresh-size: 13px;
+  --on-deck-completion-size: 11px;
+  --on-deck-completion-padding: 3px 5px;
+  --on-deck-completion-bottom: 8px;
+  /* List like toggle (OG interaction icon gap). */
+  --list-like-icon-gap: 5px;
+
+  color-scheme: light;
+
+  /* Feed icons and URL popovers: */
+  --feed-popover-width: 400px;
+  --feed-icon-size: 21px;
+  --feed-nav-space: 30px;
+  --feed-nav-top: -2px;
+  --feed-title-block: 8px;
+  --feed-title-line: 18px;
+  --feed-title-icon-size: 20px;
+  --feed-title-icon-gap: 3px;
+  --feed-paragraph-gap: 20px;
+  --feed-badge-top: -3px;
+  --feed-badge-end: -9px;
+  --feed-arrow-size: 10px;
+  --color-feed-text: light-dark(#333, #fff);
+  --color-feed-title: light-dark(#f7f7f7, #292929);
+  --color-feed-divider: light-dark(#ebebeb, #444);
+
+  &[data-theme='dark'] {
+    color-scheme: dark;
+  }
+
+  &[data-theme='system'] {
+    color-scheme: light dark;
+  }
+
+  /* History controls: OG watch popovers and summary buttons. */
+  /* Rewatch, drop, restore and hide controls. */
+  --visibility-date-popover-width: 308px;
+  --visibility-side-height: 20px;
+  --visibility-side-size: 15px;
+  --visibility-side-opacity: 0.75;
+  --visibility-side-top: 4px;
+  --visibility-side-bottom: 2px;
+  --visibility-pill-bg: rgb(0 0 0 / 0.6);
+  --visibility-pill-hover: rgb(0 0 0 / 0.8);
+
+  --watch-border: 1px;
+  --watch-focus: 2px;
+  --watch-busy-opacity: 0.6;
+  --watch-card-width: 35px;
+  --watch-card-height: 40px;
+  --watch-card-small-width: 28px;
+  --watch-card-small-height: 34px;
+  --watch-popover-gap: 10px;
+  --watch-arrow: 10px;
+  --watch-prompt-block: 6px;
+  --watch-prompt-inline: 8px;
+  --watch-prompt-line: 18px;
+  --watch-prompt-close-space: 28px;
+  --watch-body-block: 9px;
+  --watch-body-inline: 10px;
+  --watch-choice-gap: 10px;
+  --watch-choice-block: 4px;
+  --watch-choice-inline: 9px;
+  --watch-choice-radius: 3px;
+  --watch-add-line: 25px;
+  --watch-metadata-caret-size: 4px;
+  --watch-metadata-caret-gap: 3px;
+  --watch-close-top: 9px;
+  --watch-close-right: 7px;
+  --watch-date-width: 288px;
+  --watch-side-start: 8px;
+  --watch-side-end: 6px;
+  --watch-icon-padding: 5px;
+  --watch-info-block: 10px;
+  --watch-summary-line: 34px;
+  --watch-summary-selected-line: 18px;
+  --watch-detail-inline: 10px;
+  --watch-detail-bottom: 5px;
+  --watch-detail-size: 11px;
+  --watch-history-size: 11px;
+  --watch-detail-line: 15px;
+  --watch-progress-gap: 1px;
+  --watch-progress-height: 5px;
+  --color-watch-prompt: light-dark(#f7f7f7, #111);
+  --color-watch-cancel: #aaa;
+  --color-watch-history: rgb(0 0 0 / 0.25);
+  --color-watch-history-hover: rgb(0 0 0 / 0.4);
+  --watch-history-block: 3px;
+  --watch-history-inline: 5px;
+
+  /* Grays (Bootstrap 3) */
+  --gray-darker: #222;
+  --gray-dark: #333;
+  --gray: #555;
+  --gray-light: #999;
+  --gray-lightish: #ccc;
+  --gray-lighter: #eee;
+
+  /* Brand */
+  --brand-primary: #ed1c24;
+  --brand-primary-darken: #c61017; /* darken(#ed1c24, 10%): hover and pressed, from (theme-red) */
+  --brand-secondary: #009edf;
+  --brand-tertiary: #8e44ad;
+  --brand-quaternary: #16a085;
+  --brand-fifth: #2b678f;
+  --brand-sixth: #6e7a83;
+  --brand-seventh: #e85d04;
+  --brand-eighth: #cc0c52;
+  --brand-success: #5cb85c;
+  --brand-info: #5bc0de;
+  --brand-warning: #f0ad4e;
+  --brand-danger: #d9534f;
+  --color-orange: #ef9549;
+
+  /* Progress bars. The thin bar under posters sat
+     on #530d0d; theme-red later used darken(#ed1c24, 30%) = #68080c there, and wins. */
+  --progress-bg: #fff; /* $pagination-bg */
+  --progress-bar: #ed1c24;
+  --progress-under-bg: #530d0d;
+  --progress-under-height: 5px;
+  --space-under-progress-title: 14px; /* from the bar's top edge to the card title */
+
+  /* Ratings, 1 to 10 */
+  --rating-1: #616161;
+  --rating-2: #675b5b;
+  --rating-3: #705252;
+  --rating-4: #7a4747;
+  --rating-5: #863c3c;
+  --rating-6: #922f30;
+  --rating-7: #9e2424;
+  --rating-8: #a81918;
+  --rating-9: #b11010;
+  --rating-10: #b70a0a;
+
+  /* Episode types */
+  --episode-series-premiere: #08a6a6;
+  --episode-season-premiere: #08a508;
+  --episode-mid-season-premiere: #469ed0;
+  --episode-mid-season-finale: #2444bf;
+  --episode-season-finale: #c30b50;
+  --episode-series-finale: #a608a6;
+  --episode-bonus: #7d19c4;
+  --episode-trailer: #777;
+
+  /* States (alerts) */
+  --state-default-bg: #f6f6f6;
+  --state-default-border-light: #f3f3f3;
+  --state-success-text: #3c763d;
+  --state-success-bg: #dff0d8;
+  --state-info-text: #31708f;
+  --state-info-bg: #d9edf7;
+  --state-warning-text: #8a6d3b;
+  --state-warning-bg: #fcf8e3;
+  --state-danger-text: #a94442;
+  --state-danger-bg: #f2dede;
+
+  /* Themed surfaces and text: light-dark(OG, dark-knight). Dark knight kept links red. */
+  --color-page: #000; /* body behind the sections, both themes */
+  --color-surface: light-dark(#fff, #1d1d1d); /* <section> */
+  --color-box: light-dark(#fff, #333); /* boxes, empty states, popovers */
+  --color-text: light-dark(#333, #fff);
+  --color-text-muted: #999;
+  --color-link: #ed1c24;
+  --color-link-hover: #af0e14; /* darken(#ed1c24, 15%) */
+  --color-separator: light-dark(#eee, #444);
+
+  /* Dark-knight values with no single light twin. Pair them in the component that needs them. */
+  --dk-bg2: #161616;
+  --dk-bg3: #111;
+  --dk-box-accent: #292929;
+  --dk-poster-border: #000;
+
+  /* Form controls */
+  --color-input-bg: light-dark(#fff, #333);
+  --color-input-bg-disabled: light-dark(#eee, #333);
+  --color-input-text: light-dark(#555, #ccc);
+  --color-input-border: light-dark(#ccc, #666);
+  --color-input-border-focus: #66afe9;
+  --color-input-placeholder: #999;
+
+  /* Buttons */
+  --color-btn-default-text: #333;
+  --color-btn-default-bg: #fff;
+  --color-btn-default-border: #ccc;
+  --color-btn-primary-border: #de1219; /* darken(#ed1c24, 5%) */
+  --color-btn-danger-border: #d43f3a; /* darken(#d9534f, 5%) */
+
+  /* Inline code (Bootstrap 3) */
+  --color-code-text: #c7254e;
+  --color-code-bg: #f9f2f4;
+  --color-code-border: #ddd;
+
+  /* Tables (OG never themed them for dark) */
+  --color-table-border: #ddd;
+  --color-table-accent: #f9f9f9;
+  --color-table-hover: #f5f5f5;
+
+  /*
+   * Type. OG's headings were Proxima Nova, loaded as three families ("Proxima Nova", "Proxima Nova
+   * Semibold", "Proxima Nova Bold"), each at font-weight normal. og can't use Proxima Nova, so headings
+   * use Montserrat (OFL, Google Fonts), the closest open geometric sans, as one family with three weights.
+   */
+  --font-body: 'Varela Round', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-headings: Montserrat, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', Times, serif;
+  --font-mono: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  --font-weight-headings-light: 400; /* h2 to h6 (OG: "Proxima Nova") */
+  --font-weight-headings: 600; /* h1, bold inside headings (OG: "Proxima Nova Semibold") */
+  --font-weight-headings-heavy: 700; /* b, strong (OG: "Proxima Nova Bold") */
+
+  --font-size-base: 14px;
+  --font-size-large: 18px;
+  --font-size-small: 12px;
+  --font-size-h1: 34px;
+  --font-size-h2: 24px;
+  --font-size-h3: 24px;
+  --font-size-h4: 18px;
+  --font-size-h5: 14px;
+  --font-size-h6: 12px;
+
+  --line-height-base: 1.428571429; /* 20/14 */
+  --line-height-computed: 20px;
+  --line-height-large: 1.33;
+  --line-height-small: 1.5;
+  --line-height-headings: 1.1;
+
+  --text-shadow-headings: 0 0 20px black;
+  --text-shadow-light: 0 0 20px rgb(0 0 0 / 0.3);
+
+  /* Spacing */
+  --space-xs-block: 1px;
+  --space-xs-inline: 5px;
+  --space-sm-block: 5px;
+  --space-sm-inline: 10px;
+  --space-base-block: 6px;
+  --space-base-inline: 12px;
+  --space-lg-block: 10px;
+  --space-lg-inline: 16px;
+  --gutter: 20px;
+  --table-cell-padding: 8px;
+  --table-cell-padding-condensed: 5px;
+
+  /* Control heights: line-height + vertical padding x2 + 2px border */
+  --control-height-small: 30px;
+  --control-height: 34px;
+  --control-height-large: 46px;
+
+  /* Radii: Bootstrap's are all 0 in OG */
+  --radius-base: 0;
+  --radius-code: 3px;
+
+  /* Shadows */
+  --shadow-dropdown: 0 6px 12px rgb(0 0 0 / 0.175);
+  --shadow-input: inset 0 1px 1px rgb(0 0 0 / 0.075);
+  --shadow-input-focus: inset 0 1px 1px rgb(0 0 0 / 0.075), 0 0 8px rgb(102 175 233 / 0.6);
+  --shadow-soft: 0 0 5px rgb(0 0 0 / 0.3);
+
+  /* Images */
+  --ratio-poster: 2 / 3;
+  --ratio-fanart: 16 / 9;
+
+  /* Poster and fanart cards, list rows, the summary fanart header */
+  --color-card-bg: #1d1d1d; /* quick-icon bar and fanart backdrop, both themes */
+  --color-card-border: light-dark(#eee, #000);
+  --color-card-text: #fff;
+  --color-card-subtitle: light-dark(var(--gray-dark), #aaa);
+  --color-watch-now: #aaa;
+  --color-rank-border: light-dark(#fff, #1d1d1d);
+  --color-list-row-header: light-dark(#fafafa, var(--dk-box-accent));
+  --color-pill: light-dark(var(--gray-light), var(--gray));
+  --color-avatar-border: #464646;
+  --color-fanart-avatar-shade: rgb(0 0 0 / 0.3); /* .fanart .avatar-wrapper, over a user's cover */
+  --color-fanart-avatar-ring: #fff;
+  --fanart-avatar-size: 120px;
+  --fanart-avatar-border: 5px;
+  --color-stats-bar: rgb(0 0 0 / 0.8);
+  --gradient-shadow-base: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.4));
+  --gradient-shadow-header: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.6));
+  --shadow-list-poster: 0 0 15px rgb(255 255 255 / 0.5);
+  --font-size-card-title: 16px; /* poster card title */
+  --font-size-card-subtitle: 12px;
+  --line-height-card-subtitle: 13px;
+  --space-card-subtitle: 5px; /* above each line under the title */
+  --font-size-card-tag: 11px; /* tags above a title, rank pill */
+  --font-size-fanart-title: 18px;
+  --font-size-quick-icon: 1.7em;
+  --font-size-quick-icon-small: 1.3em;
+  --font-size-rating: 20px;
+  --font-size-rating-small: 14px;
+  --font-size-rating-heart: 16px;
+  --font-size-list-row-meta: 13px;
+  --font-size-header-year: 25px;
+  --transition-card: 0.5s;
+
+  /* Profile grid removal: users.js/global.js fade, then collapse. */
+  --card-remove-fade-duration: 1000ms;
+
+  /* List row pills and icons */
+  --color-list-pill-link: var(--brand-secondary);
+  --color-list-pill-collaborators: var(--brand-seventh);
+  --color-list-pill-collaborators-count: #b64903; /* darken(#e85d04, 10%) */
+  --color-list-edit: var(--brand-success);
+  --color-list-delete: var(--brand-primary);
+  --color-list-progress: light-dark(#555, #eee);
+  --font-size-list-row-action: 20px;
+  --font-size-list-row-leave: 15px;
+  --list-row-action-gap: 15px;
+  --color-list-add: #38a038; /* #btn-list-add */
+  --color-list-reorder: light-dark(#333, #eee);
+
+  /* Lists index reorder controls (OG's poster edit overlay). */
+  --color-list-reorder-overlay: rgb(0 0 0 / 0.7);
+  --list-reorder-gap: 12px;
+  --font-size-list-reorder: 15px;
+  --font-size-list-reorder-drag: 18px;
+  --list-reorder-rank-offset: -11px;
+  --list-reorder-rank-size: 22px;
+  --list-reorder-rank-radius: 11px;
+  --list-reorder-rank-border: 2px;
+  --list-reorder-rank-scale: 1.3;
+  --list-reorder-scroll-offset: 50px;
+  --list-reorder-drag-opacity: 0.5;
+
+  /* List page manage mode */
+  --list-manage-padding: 13px 0 15px; /* .list-manage-wrapper.expanded */
+  --list-manage-count-offset: 4px; /* h2 .left */
+  --list-manage-row-height: 23px; /* h2 .right: the 20px icons' 22px line */
+  --font-size-list-manage: 16px;
+  --list-manage-icon-gap: 5px;
+  --gradient-list-edit: linear-gradient(rgb(0 0 0 / 0) 25%, rgb(0 0 0 / 0.9) 100%);
+  --list-edit-icons-bottom: 15px;
+  --font-size-list-edit-notes: 16px;
+  --opacity-list-manage-quick-icons: 0.5; /* #sortable-grid.sortable .quick-icons > div */
+  --confirm-warning-padding: 8px; /* .popover .warning-text */
+
+  --list-tools-gap: 10px;
+
+  /* List page */
+  --list-title-padding: 4px 0 6px; /* .subnav-wrapper.list-title-wrapper */
+  --list-title-heading-margin: 10px 0; /* .subnav-wrapper .left h2 */
+  --list-title-pill-gap: 5px;
+  --color-list-title-action: light-dark(#333, #fff); /* .btn-list-*, dark-knight's white subnav icons */
+  --font-size-list-title-share: 17px; /* a.share .trakt-icon */
+  --font-size-list-title-progress: 18px; /* .btn-list-progress .icon */
+  /* The stats bar */
+  --font-size-list-stat-under: 11px;
+  --color-list-stat-under: #666;
+  --list-stat-under-offset: -15px;
+  --list-stat-like-nudge: -2px; /* .like .trakt-icon { margin-top: -2px } */
+  --color-read-notes-shade: rgb(0 0 0 / 0.7); /* .list-read-notes gradient's end */
+  --font-size-read-notes: 13px;
+  --font-size-vip-sort: 12px; /* .dropdown-menu a.vip-only */
+  --vip-sort-padding-block: 7px;
+  --fanart-header-height: 500px;
+  --fanart-header-height-slim: 150px;
+
+  /* Missing media images: OG's placeholders/thumb assets, shared by summary, cast and episode cards. */
+  --image-placeholder-poster: url('../assets/placeholders/poster.png');
+  --image-placeholder-fanart: url('../assets/placeholders/fanart.png');
+
+  /* Poster badges: rewatching and dropped */
+  --badge-size: 30px;
+  --color-badge-bg: light-dark(#aaa, #333);
+  --color-badge-text: light-dark(#fff, #aaa);
+  --color-badge-border: light-dark(#fff, #1d1d1d);
+  --font-size-badge: 12px;
+  --color-dropped-badge: var(--gray-lightish);
+  --color-dropped-badge-hover: #fff;
+  --gradient-dropped: radial-gradient(circle farthest-corner, rgb(0 0 0 / 0.5), rgb(0 0 0 / 0));
+  --font-size-dropped-badge: 40px;
+  --font-size-dropped-badge-small: 30px;
+
+  /* Dashboard panels */
+  --color-panel-gray: light-dark(#e5e5e5, #1d1d1d); /* #ondeck-wrapper */
+  --color-watchlist-bg: light-dark(#e5e5e5, var(--dk-bg3)); /* body.dashboard #list-wrapper */
+  /* dark-knight's `section > .container > .posters` and `#recently-watched-wrapper` quick-icon bars */
+  --color-panel-quick-icons: light-dark(#1d1d1d, var(--dk-bg2));
+  --color-help-text: light-dark(#777, #999);
+  --font-size-help-text: 13px;
+  --space-help-text-inline: 40px; /* lines the help text up with the h2 after its icon */
+  --space-heading-icon: 10px;
+  --space-heading-section: 28px; /* h2.section */
+  --space-fanarts-row-end: 30px; /* #activity-wrapper .row.fanarts margin-bottom */
+  --font-size-see-more: 13px;
+  --font-size-see-more-icon: 18px;
+  --font-size-customize-icon: 16px;
+  --space-see-more-icon: 7px;
+  --space-customize: 15px;
+  --color-customize: var(--brand-success);
+  --color-card-action: var(--gray-light); /* the rewatch and drop icons under an on-deck card */
+  --color-card-action-hover: light-dark(#000, #fff);
+  --color-on-deck-quick-icons: light-dark(#1d1d1d, var(--dk-bg2));
+  --color-on-deck-border: light-dark(var(--gray-lighter), transparent);
+
+  /* The less and more pill under a dashboard panel (.page-navigator) */
+  --color-page-navigator-bg: light-dark(#fff, var(--dk-bg3));
+  --color-page-navigator-border: light-dark(#ddd, var(--gray-dark));
+  --radius-page-navigator: 5px;
+  --font-size-page-navigator: 11px;
+  --font-size-page-navigator-icon: 16px;
+  --opacity-page-navigator: 0.5;
+  --space-page-navigator-block: 4px;
+  --space-page-navigator-inline: 6px;
+  --color-page-navigator-dark-bg: var(--dk-bg3); /* .page-navigator.dark */
+  --color-page-navigator-dark-border: var(--gray-dark);
+  --color-page-navigator-dark-text: #fff;
+
+  /* Dashboard frame: greeting, stats, inbox and account welcome. */
+  --dashboard-greeting-top: 30px;
+  --dashboard-greeting-height: 97px; /* 72px avatar, its 5px inline baseline gap and 20px bottom margin */
+  --dashboard-title-top: 7px;
+  --dashboard-avatar-gap: 15px;
+  --dashboard-avatar-border: 3px;
+  --dashboard-profile-top: 10px;
+  --dashboard-stat-icon-top: 4px;
+  --font-size-dashboard-stat-icon: 29px;
+  --font-size-dashboard-library-icon: 30px;
+  --color-dashboard-stats-bg: rgb(0 0 0 / 0.5);
+  --dashboard-inbox-bottom: 30px;
+  --dashboard-inbox-title-margin: 28px 0 15px;
+  --dashboard-inbox-avatar: 45px;
+  --dashboard-border-width: 1px;
+  --font-size-dashboard-inbox-message: 13px;
+  --font-size-dashboard-inbox-action: 26px;
+  --font-size-dashboard-inbox-block: 23px;
+  --dashboard-inbox-action-line: 35px;
+  --color-dashboard-inbox-bg: #1d1d1d;
+  --color-dashboard-inbox-border: #4d4d4d;
+  --dashboard-welcome-padding: 70px 50px;
+  --dashboard-welcome-steps-top: 25px;
+  --dashboard-welcome-intro-line: 1.2;
+  --color-dashboard-anniversary-bg: var(--state-info-bg);
+  --color-dashboard-anniversary-text: var(--state-info-text);
+  --color-dashboard-reddit: #ff4500;
+  --color-dashboard-mastodon: #6364ff;
+  --color-dashboard-twitter: #000;
+
+  /* Compact VIP badge, shared by account welcome and other promotional headings (OG .label-vip.smaller). */
+  --font-size-label-vip-small: 13px;
+  --label-vip-small-indent: 23px;
+  --label-vip-small-padding: 5px 4px 4px 0;
+
+  /* The dashboard's Upcoming Schedule */
+  --color-schedule-bg: light-dark(#eee, var(--dk-bg2));
+  --color-schedule-no-data-bg: light-dark(#fafafa, var(--color-no-data-bg));
+  --color-schedule-separator: light-dark(#d9d9d9, #444);
+  --color-feed-icon: #999; /* h2 .feed-icons */
+  --color-feed-icon-hover: var(--brand-primary);
+  --schedule-min-height: 380px;
+  --font-size-schedule-day: 14px;
+  --space-schedule-day: 15px; /* under a day's h3 */
+  --space-schedule-entry: 15px; /* above and below the line between two entries */
+  --space-schedule-same-show: 10px;
+  --space-schedule-line: 5px; /* under the show title, above the air time and Watch Now */
+  --space-feed-icons: 20px; /* the icon's and .feed-icons' 10px right margins */
+  --font-size-schedule-tag: 11px; /* the episode-type label and Watch Now */
+  --font-size-schedule-watch-now-icon: 15px;
+  --space-schedule-watch-now-icon: 2px;
+  --space-schedule-tickets-icon: 3px;
+  --space-schedule-tag-nudge: 3px; /* Watch Now sat 3px left, so its play icon lines up */
+  --schedule-tag-padding: 3px 5px;
+
+  /* The dashboard's Last 30 Days */
+  --color-help-dash: #999;
+  --color-help-plays: #bbb;
+  --space-help-dash: 6px;
+  --color-minutes-bar: var(--color-ratings-bar);
+  --color-minutes-bar-hover: var(--color-ratings-bar-hover);
+  --color-chart-grid: rgb(0 0 0 / 0.02); /* scaleGridLineColor */
+  --minutes-chart-height: 142px; /* the canvas and the line gap under it */
+  --minutes-plot-height: 106px;
+  --minutes-plot-top: 10px; /* Chart.js v1's padding over the plot */
+  --minutes-plot-inline: 2px 8px; /* the y axis sat 2px in from the text, the plot's end 8px short of it */
+  --minutes-bar-spacing: 1px; /* barValueSpacing */
+  --minutes-bar-hit-height: 5px;
+  --minutes-tooltip-offset: 10px; /* above the bar's top */
+  --genre-bars-padding-dashboard: 70px 0 50px;
+
+  /* The dashboard's Social Feed */
+  --color-social-feed-bg: light-dark(var(--gray-lighter), var(--dk-bg2));
+  --color-social-feed-no-data-bg: light-dark(#fafafa, var(--color-no-data-bg));
+  --color-social-under-bg: light-dark(#fff, var(--gray-darker)); /* .poster-under */
+  --color-social-ring: light-dark(#fff, #000); /* the check's and the avatar's borders */
+  --color-social-link: light-dark(var(--color-link), var(--gray-lightish)); /* the title; the name stays red */
+  --color-social-date-bg: light-dark(#ddd, var(--gray-dark));
+  --color-social-date-text: light-dark(var(--gray), var(--gray-lighter));
+  --social-badge-size: 40px; /* the check and the avatar, half over the poster's bottom edge */
+  --social-badge-border: 2px;
+  --social-check-inset: -5px; /* the check sits 5px right of center, the avatar 35px left of it */
+  --social-avatar-inset: -35px;
+  --font-size-social-check: 24px;
+  --font-size-social-text: 12px;
+  --social-text-height: 54px; /* three lines */
+  --social-under-padding: 30px 10px 10px;
+  --font-size-social-date: 10px;
+  --space-social-date: 6px;
+
+  /* The dashboard's Show and Movie Recommendations: a dark band in both themes */
+  --color-recommendations-bg: var(--gray-darker);
+  --color-recommendations-text: #fff;
+  --color-recommendations-hide: #aaa;
+  --color-recommendations-hide-hover: #fff;
+  --color-recommendations-no-data-bg: light-dark(#444, var(--color-no-data-bg));
+  --color-recommendations-no-data-text: light-dark(var(--gray-light), var(--color-no-data-text));
+  --space-recommendations-help: 10px; /* h3.help-text margin-bottom */
+  --space-recommendations-navigator: 8px; /* .page-navigator margin-top */
+  --font-size-recommendations-hide-icon: 0.875em; /* fa-sm */
+
+  /* Layout */
+  --header-height: 65px;
+  --container-sm: 740px; /* >= 768px */
+  --container-md: 960px; /* >= 992px */
+  --container-lg: 1160px; /* >= 1200px */
+  --container-xlg: 1560px; /* >= 1600px */
+
+  /* Header and footer */
+  --font-size-nav: 16px; /* header links, buttons, search field */
+  --font-size-footer: 13px;
+  --font-size-footer-small: 11px; /* copyright */
+  --radius-sm: 4px; /* header buttons */
+  --radius-lg: 8px; /* search field, header menus */
+  --color-header-bg: rgb(0 0 0 / 0.5);
+  --color-header-bg-hover: rgb(0 0 0 / 0.8);
+  --color-header-search-bg: rgb(255 255 255 / 0.2);
+  --color-header-text: #fff;
+  --color-menu-text: light-dark(#000, #ccc);
+  --color-header-active-text: light-dark(#000, #fff); /* on --color-box: hovered search field, open profile tab */
+  --color-header-btn-hover-bg: #fff; /* Get VIP and Join Trakt invert on hover */
+  --color-menu-description: light-dark(#444, rgb(255 255 255 / 0.3));
+  --color-menu-divider: light-dark(#e5e5e5, #444);
+  --color-menu-separator: light-dark(#e1e1e1, #444); /* between the Apps menu rows */
+  --color-footer-muted: #777;
+  --blur-header: blur(4px);
+
+  /* Header search and its autocomplete */
+  --search-max-width: 900px;
+  --search-control-height: 42px;
+  --search-focused-min-width: 500px;
+  --search-type-width: 140px; /* the type picker */
+  --search-poster-width: 50px;
+
+  /* Recent and trending query sections (OG header dropdown). */
+  --space-search-section: 8px;
+  --radius-search-tag: 3px;
+  --blur-search: blur(2px); /* the box while the type menu is open */
+  --brand-primary-darken-20: #970c11; /* darken(#ed1c24, 20%): the type tag on a highlighted row */
+  --color-search-info: light-dark(rgb(0 0 0 / 0.5), rgb(255 255 255 / 0.8));
+  --color-search-tag: #666;
+  --color-search-term: light-dark(rgb(0 0 0 / 0.75), rgb(255 255 255 / 0.85));
+  --color-search-in-type: light-dark(rgb(0 0 0 / 0.3), rgb(255 255 255 / 0.3));
+  --color-search-in-type-selected: rgb(255 255 255 / 0.6);
+
+  /* Dialogs */
+  --color-dialog-bg: light-dark(#f5f5f7, #1d1d1d);
+  --color-dialog-title-bg: light-dark(#eee, #161616);
+  --color-dialog-title-border: light-dark(#ddd, #444);
+  --color-dialog-title-text: light-dark(#444, #999);
+  --color-dialog-close: #ccc;
+  --color-dialog-fanart-shade: rgb(0 0 0 / 0.7); /* the title band over an item modal's fanart */
+  --color-backdrop: rgb(0 0 0 / 0.7); /* body.moderate and .blur backdrops */
+  --shadow-dialog: 0 0 20px light-dark(#666, #000);
+  --radius-dialog: 12px;
+  --dialog-width: 360px;
+  --dialog-width-md: 500px; /* report item, report comment */
+  --dialog-width-lg: 600px; /* .wider */
+  --dialog-width-xl: 690px; /* #watch-now-modal */
+  --dialog-width-notes: 440px; /* #notable-modal, #list-notes-modal */
+  --space-dialog-wide-inline: 30px; /* item modals: the fanart title band and the notes form */
+  --notes-textarea-height: 130px; /* the notes modal's five rows */
+  --notes-textarea-padding: 10px 30px 10px 10px; /* room for the counter, like OG's emoji button */
+  --font-size-dialog-submit: 16px; /* .checkin-modal .btn-primary */
+  --font-size-dialog-title: 13px;
+  --space-panel: 15px; /* $modal-inner-padding, toast padding */
+  --space-dialog-inline: 25px;
+  --blur-dialog-backdrop: blur(8px); /* .modal-backdrop .image, the item's fanart behind the check-in modal */
+  --color-backdrop-image: #000; /* .modal-backdrop under that image */
+
+  /* Video lightbox (magnific-popup's iframe type, vendor/assets/components/magnific-popup at 2e0405a5f) */
+  --lightbox-width: 900px; /* $mfp-iframe-max-width */
+  --space-lightbox-gutter: 8px; /* $mfp-popup-padding-left */
+  --space-lightbox-gutter-mobile: 6px; /* below 800px */
+  --color-lightbox-backdrop: rgb(11 11 11 / 0.8); /* $mfp-overlay-color at $mfp-overlay-opacity */
+  --color-lightbox-bg: #000; /* $mfp-iframe-background */
+  --shadow-lightbox: 0 0 8px rgb(0 0 0 / 0.6); /* $mfp-shadow */
+  --color-lightbox-close: #fff; /* $mfp-controls-color */
+  --opacity-lightbox-close: 0.65; /* $mfp-controls-opacity, 1 on hover and focus */
+  --font-lightbox-close: Arial, Baskerville, monospace; /* the × glyph */
+  --font-size-lightbox-close: 28px;
+  --lightbox-close-size: 44px;
+  --lightbox-close-top: 40px; /* $mfp-iframe-padding-top: the × sits in it, above the video */
+  --lightbox-close-overhang: 6px; /* how far past the video's right edge the button reaches */
+
+  /* Check-in modal */
+  --font-size-checkin-heading: 26px; /* .checkin-modal h1 */
+  --font-size-checkin-episode: 16px; /* .checkin-modal h2: an episode without a screenshot */
+  --checkin-heading-top: 10px;
+  --checkin-logo-height: 116px; /* h1.logo min-height */
+  --checkin-shadow-height: 100px; /* .shadow-base over the screenshot */
+  --color-checkin-fanart-border: light-dark(#ddd, #444); /* .screenshot .fanart, $dk-separator-color */
+  --radius-checkin-submit: 8px;
+  --font-size-checkin-message: 16px; /* .form-signin .form-control */
+  --checkin-message-padding: 10px;
+
+  /* Dropdowns */
+  --dropdown-min-width: 160px;
+  --font-size-sort-direction: 21px; /* h2 .sort-wrapper .icon */
+  --space-dropdown-item-block: 2px;
+  --color-dropdown-border: light-dark(rgb(0 0 0 / 0.15), #666);
+  --color-dropdown-text: light-dark(#333, #ccc);
+  --color-dropdown-hover-text: light-dark(#262626, #ccc);
+  --color-dropdown-hover-bg: light-dark(#f5f5f5, #222);
+  /* $dropdown-header-color: $gray-light. Bootstrap colors .dropdown-header itself, so dark-knight's #ccc menu doesn't reach it. */
+  --color-dropdown-header: var(--gray-light);
+  --color-dropdown-note: light-dark(#999, #888); /* an <em> in a trigger or a row */
+  /* The default trigger: OG's .btn-default, which dark-knight's `// dropdown` block turns $dk-box-bg-color. */
+  --color-dropdown-trigger-text: light-dark(var(--color-btn-default-text), #ccc);
+  --color-dropdown-trigger-bg: light-dark(var(--color-btn-default-bg), #333);
+  --color-dropdown-trigger-border: light-dark(var(--color-btn-default-border), #666);
+  /* Open: darken(#fff, 10%) in light; dark-knight keeps the closed colors. */
+  --color-dropdown-trigger-open-bg: light-dark(#e6e6e6, #333);
+  --color-dropdown-trigger-open-border: light-dark(#adadad, #666);
+  /* variant="transparent" (`.btn.btn-transparent` in a discover `.subnav-wrapper`) */
+  --color-dropdown-transparent-text: #eee;
+  --color-dropdown-transparent-hover: #fff;
+  --color-dropdown-transparent-border: transparent; /* `.btn` without `.btn-default` */
+  --shadow-btn-active: inset 0 3px 5px rgb(0 0 0 / 0.125);
+
+  /* Sort and filter controls */
+  --font-size-filter-terms: 18px;
+  --font-size-filter-icon: 21px;
+  --color-filter-icon: light-dark(var(--gray-dark), #fff);
+  --color-filter-icon-frame: #fff; /* frame-wrapper h1.filter-dropdown.icon, */
+  --font-size-filter-icon-frame: 19px;
+  --font-size-filter-counter: 10px;
+  --color-filter-counter-bg: #fff;
+  --color-filter-counter-text: var(--brand-primary);
+  --opacity-faded: 0.15; /* .grid-item.fade-*-on */
+
+  /* Toasts */
+  --state-success-border: #d6e9c6;
+  --state-danger-border: #ebccd1;
+  --font-size-toast-close: 20px;
+  --text-shadow-toast-close: 0 1px 0 #fff;
+
+  /* Tooltips.
+     Dark knight never restyled them, so both themes share these. */
+  --tooltip-max-width: 400px;
+  --line-height-tooltip: 1.4;
+  --tooltip-arrow: 5px;
+  --tooltip-offset: 3px; /* between the arrow's tip and the trigger */
+  --space-tooltip: 3px 8px;
+  --radius-tooltip: 3px;
+  --color-tooltip-bg: #000;
+  --color-tooltip-text: #fff;
+  --opacity-tooltip: 0.9;
+  --transition-tooltip: 0.15s linear;
+  --color-tooltip-muted: #aaa; /* .tooltip .collection-metadata */
+  --color-tooltip-divider: #444; /* .tooltip-hr */
+  --tooltip-notable-max-height: 400px; /* .notable-tooltip .tooltip-inner */
+  --space-tooltip-notable: 8px;
+  --space-tooltip-divider: 5px;
+
+  /* Rating popovers (OG Bootstrap popover and summary rating trigger). */
+  /* Poster rating lines. */
+  --space-card-rating-top: 5px;
+  --line-height-card-rating: 13px;
+
+  --rating-popover-width: 275px;
+  --radius-rating-popover: 0;
+  --rating-arrow-size: 10px;
+  --rating-popover-gap: 10px;
+  --rating-popover-border-width: 1px;
+  --rating-popover-body-block: 9px;
+  --rating-summary-body-end: 5px;
+  --rating-popover-body-inline: 14px;
+  --rating-prompt-block: 6px;
+  --rating-prompt-inline: 8px;
+  --rating-summary-open-width: 175px;
+  --rating-focus-width: 2px;
+  --rating-busy-opacity: 0.65;
+  --color-rating-prompt: light-dark(#f7f7f7, #333);
+  --shadow-rating-popover: 0 5px 10px rgb(0 0 0 / 20%);
+
+  /* Core controls: pagination, pill tabs, rating hearts, empty and loading states */
+  --font-size-pagination: 16px;
+  --font-size-icon-lg: 20px; /* pagination arrows, rating hearts */
+  --font-size-tab: 13px;
+  --font-size-count: 10px; /* the count badge on a tab */
+  --font-size-no-results: 26px;
+  --font-size-loading-logo: 60px;
+  --radius-tab: 3px;
+  --tab-padding: 3px 6px 2px;
+  --tab-gap: 7px;
+  --no-results-padding: 100px;
+  --no-results-image: 150px;
+  --color-pagination-text: light-dark(#000, #fff);
+  --color-pagination-disabled: light-dark(#ccc, #666);
+  --color-tab-bg: light-dark(rgb(0 0 0 / 0.3), rgb(255 255 255 / 0.15));
+  --color-tab-bg-hover: light-dark(rgb(0 0 0 / 0.5), rgb(255 255 255 / 0.35));
+  --color-tab-text: light-dark(#fff, #ccc);
+  --color-count-bg: #888;
+  --color-count-bg-hover: #000;
+  --color-rating-empty: light-dark(#ddd, #444);
+  --color-no-data-bg: light-dark(#f0f0f0, #333);
+  --color-no-data-text: light-dark(#555, #ccc);
+  --color-no-results-text: #555; /* on the dark charts frame in both themes */
+  --color-frame: #1d1d1d; /* the charts and search frame, dark in both themes */
+  --color-text-inverse: #fff; /* on red: the current page, the active tab, the loading states */
+
+  /* VIP and Private labels */
+  --font-size-label: 16px;
+  --font-size-label-years: 10px;
+  --font-size-label-star: 23px;
+  --radius-label-vip: 20px 0 0 20px;
+  --color-label-ep: #b50d13;
+  --color-label-years: #000; /* the year count on the white star */
+  --color-label-private: var(--gray-light);
+  --color-label-years-light-bg: #aaa; /* the pill label's star, after a comment author */
+  --font-size-label-years-pill: 9px;
+  --radius-label-small: 2px; /* .label-private.smaller */
+
+  /* User cards: the network page grid */
+  --user-card-radius: 15px;
+  --user-card-overlap: 15px; /* the info panel rides up over the cover */
+  --user-card-avatar-column: 80px;
+  --user-card-avatar-size: 70px;
+  --user-card-avatar-inset: 10px;
+  --user-card-info-padding: 25px 0 15px 10px;
+  --user-card-icon-gap: 5px;
+  --user-card-icon-lead: 10px; /* before the gender icon */
+  --user-card-btn-padding: 4px 8px;
+  --user-card-btn-gap: 10px;
+  --user-card-btn-icon-gap: 5px;
+  --font-size-user-card-name: 16px;
+  --color-user-card-info-bg: light-dark(var(--gray-lighter), var(--gray-dark));
+  --color-btn-follows-you: #000;
+
+  /* Profile frame: the cover, name block, watching-now bar and section tabs on every /users/:id page
+      */
+  /* Official lists: the slim profile cover without the 40px profile tabs. */
+  --official-list-cover-height: 130px;
+  --official-list-avatar-border: 3px;
+
+  --profile-cover-height: 500px;
+  --profile-cover-height-watching: 620px; /* OG didn't add the header height to this one */
+  --profile-cover-height-slim: 170px;
+  --profile-cover-height-slim-watching: 240px;
+  --profile-avatar-size: 100px;
+  --profile-avatar-size-slim: 72px;
+  --profile-avatar-top: 90px;
+  --profile-avatar-top-slim: 30px;
+  --profile-tabs-height: 40px;
+  --profile-tab-padding: 19px;
+  --profile-watching-height: 70px;
+  --font-size-profile-meta: 16px; /* counts and location under the name */
+  --font-size-watching-title: 18px;
+  --font-size-watching-numbers: 50px;
+  --font-size-watching-cancel: 40px; /* #cancel-checkin */
+  --watching-cancel-line: 68px;
+  --watching-runtime-cancel-end: 60px; /* .runtime.with-cancel */
+  --font-size-btn-circle: 18px;
+  --font-size-request-icons: 22px;
+  --font-size-request-block: 19px;
+  --font-size-private-subtitle: 18px;
+  --color-profile-tabs-bg: rgb(0 0 0 / 0.7);
+  --color-btn-circle-bg: rgb(255 255 255 / 0.2);
+  --color-btn-circle-bg-hover: rgb(255 255 255 / 0.3);
+  --color-profile-request-bg: rgb(0 0 0 / 0.8);
+  --color-profile-private-overlay: rgb(0 0 0 / 0.4);
+  --color-profile-private-message-bg: rgb(0 0 0 / 0.5);
+  --color-btn-pending: #666;
+
+  /* Relationship action states (OG users buttons, before the October 2024 retheme). */
+  --relationship-profile-margin: 0 5px;
+  --relationship-profile-icon-margin: 0 7px 2px 0;
+  --color-relationship-remove-bg: #333;
+  --color-relationship-remove-border: #666;
+  --color-relationship-card-remove-bg: #4d4d4d;
+  --color-relationship-card-remove-border: #474747;
+  --transition-relationship-request: 0.5s;
+  --color-watching-bg: rgb(237 28 36 / 0.8);
+  --color-watching-progress: rgb(149 23 22);
+  --color-watching-numbers: rgb(255 255 255 / 0.15);
+  --color-watching-cancel-hover: rgb(255 255 255 / 0.8);
+  --gradient-watching-percentage: linear-gradient(to right, rgb(149 23 22 / 0) 0%, rgb(149 23 22) 40%);
+  --gradient-profile-shade: radial-gradient(circle farthest-corner, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0));
+  --gradient-profile-shadow: linear-gradient(to right, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0));
+
+  /* Profile summary: the stat boxes, favorites and welcome hero on /users/:id */
+  --profile-box-height: 200px;
+  --profile-box-padding: 20px;
+  --profile-about-max-height: 132px;
+  --profile-chip-padding: 3px 5px;
+  --profile-placeholder-size: 240px 240px;
+  --profile-placeholder-blur: 4px;
+  --opacity-profile-placeholder: 0.3;
+  --radius-profile-chip: 3px;
+  --font-size-profile-box-title: 18px;
+  --font-size-profile-box-subtitle: 13px;
+  --font-size-profile-chip: 11px;
+  --color-profile-boxes-bg: #111;
+  --color-profile-placeholder-bg: #000;
+  --color-profile-chip: rgb(0 0 0 / 0.25);
+  --color-profile-chip-alt: rgb(255 255 255 / 0.2);
+  --color-profile-play-count: rgb(255 255 255 / 0.7);
+  --gradient-profile-box-shade: linear-gradient(to bottom, rgb(0 0 0 / 0), rgb(0 0 0 / 0.9));
+  --gradient-profile-about: linear-gradient(to bottom, var(--brand-primary), var(--brand-primary-darken));
+  --gradient-profile-stats: linear-gradient(to bottom, #0199d8, #0175a5); /* darken */
+  --favorite-poster-width: 30%;
+  --favorite-padding: 20px;
+  --radius-favorite: 15px;
+  --font-size-favorite-title: 18px;
+  --shadow-favorite-poster: 0 0 10px 0 rgb(0 0 0 / 0.25);
+  --color-favorites-bg: light-dark(var(--gray-lighter), var(--dk-bg2));
+  --color-favorites-no-data-bg: light-dark(#fafafa, var(--color-no-data-bg));
+  --color-favorite-type: rgb(0 0 0 / 0.3);
+  --welcome-hero-padding-block: 70px 50px;
+  --welcome-steps-indent: 40px;
+  --welcome-step-marker: 32px;
+  --welcome-badge-height: 34px;
+  --font-size-welcome-title: 42px;
+  --font-size-welcome-intro: 19px;
+  --font-size-welcome-step: 14px;
+  --font-size-welcome-marker: 16px;
+  --color-welcome-marker-bg: var(--gray-lighter);
+  --color-welcome-marker: var(--gray);
+  --gradient-welcome-left: linear-gradient(to right, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0.5));
+  --gradient-welcome-right: linear-gradient(to right, rgb(0 0 0 / 0.5) 0, rgb(0 0 0 / 0) 20%);
+
+  /* Lazy season/episode community icons (red-era episode-stats). */
+  --item-stats-row-height: 20px;
+  --item-stats-gap: 15px;
+  --item-stats-icon-gap: 5px;
+  --item-stats-check-size: 20px;
+  --item-stats-compact-gap: 10px;
+
+  /* Media stats: 's 300px canvas, scaled by yirChart . */
+  --media-stats-compact-strip-height: 55px;
+  --media-stats-compact-poster-overlap: 180px;
+  --media-ratings-chart-height: 300px;
+  --media-ratings-plot-height: 270px;
+  --media-ratings-plot-inset: 10px 0 0 10px;
+  --media-ratings-hit-height: 5px;
+  --media-ratings-heading-gap: 28px;
+  --media-ratings-heart-gap: 3px;
+  --media-ratings-dash-gap: 6px;
+
+  /* Profile charts: the genre bars, the ratings chart and its tooltip, and the most watched columns
+      */
+  --color-charts-bg: light-dark(#fafafa, var(--dk-bg2));
+  --color-genre-1: #cc333f;
+  --color-genre-2: #00a0b0;
+  --color-genre-3: #eb6841;
+  --color-genre-4: #6a4a3c;
+  --color-genre-5: #edc951;
+  --color-genre-6: #ab3e5b;
+  --color-genre-7: #b3cc57;
+  --color-genre-8: #ef746f;
+  --color-genre-9: #3e4147;
+  --color-genre-10: #ffbe40;
+  --color-genre-11: #7b3b3b;
+  --color-genre-label: light-dark(#333, #ddd);
+  --color-genre-label-hover: light-dark(#333, #fff);
+  --color-genre-count: light-dark(#777, #999);
+  --color-genre-count-hover: light-dark(#777, #aaa); /* while its bar is hovered */
+  --color-genre-count-link-hover: light-dark(var(--brand-primary), #aaa);
+  --color-genre-percentage: light-dark(#fff, #000);
+  --genre-bars-padding: 50px 0; /* #charts-wrapper .genre-bars.less-top */
+  --genre-bar-height: 30px;
+  --genre-bar-min-width: 45px;
+  --genre-bar-gap: 2px;
+  --genre-row-gap: 35px; /* above each bar in the phone rows, room for its label */
+  --genre-label-padding: 2px 0 2px 4px;
+  --genre-label-padding-below: 4px 0 0 4px; /* every other label, under its bar */
+  --genre-percentage-top: 7px;
+  --font-size-genre-label: 12px;
+  --font-size-genre-count: 11px;
+  --opacity-genre-dimmed: 0.5; /* every other bar while one is hovered */
+  --transition-chart: 0.5s;
+  --color-ratings-bar: #999;
+  --color-ratings-bar-hover: #ab2425;
+  --color-ratings-bar-top: light-dark(#666, #fff); /* the most rated bar */
+  --color-chart-axis: light-dark(#ddd, #444);
+  --color-chart-axis-label: light-dark(#aaa, #777);
+  --ratings-chart-height: 156px; /* the 150px canvas and the line gap under it, which was inline */
+  --ratings-plot-height: 120px;
+  --ratings-plot-inset: 9px 2px 0 10px; /* Chart.js v1's padding around the plot */
+  --ratings-bar-spacing: 1px; /* barValueSpacing */
+  --chart-tick: 5px;
+  --chart-axis-label-gap: 3px; /* between a tick's end and its label */
+  --font-size-chart-axis: 10px;
+  --font-chart: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Chart.js v1's scale font */
+  --color-chart-tooltip-bg: rgb(0 0 0 / 0.9);
+  --color-chart-tooltip-border: #666;
+  --color-chart-tooltip-text: #fff;
+  --color-chart-tooltip-muted: #999;
+  --radius-chart-tooltip: 6px;
+  --space-chart-tooltip: 5px 8px;
+  --chart-tooltip-offset: 20px; /* above the bar's top */
+  --font-size-chart-tooltip: 14px;
+  --font-size-chart-tooltip-small: 11px;
+
+  /* Calendars. Dark in both themes, like the frame. */
+  --color-frame-muted: #999; /* "Nothing on this day." */
+  --color-date-separator: #2a2a2a;
+  --font-size-date: 36px;
+  --opacity-fanart-behind-logo: 0.35;
+
+  /* Calendar settings: date headers, artwork and compact grid cards. */
+  --ratio-banner: 758 / 140;
+  --calendar-filler-opacity: 0.2;
+  --calendar-separator-bottom: 9px;
+  --calendar-month-top: 11px;
+  --calendar-month-leading: 0.8;
+  --calendar-card-bottom: 15px;
+  --calendar-logo-inset: 20px;
+  --calendar-title-size: 15px;
+  --quick-icons-compact-height: 26px;
+  --quick-icons-compact-width: 23px;
+  --quick-icons-compact-size: 1em;
+  --calendar-text-title-size: 20px;
+  --image-placeholder-banner: url('../assets/placeholders/banner.png');
+  --calendar-text-tag-padding: 2px 4px;
+  --calendar-worded-padding: 3px 5px;
+  --calendar-worded-title-top: 20px;
+  --calendar-worded-small-title-top: 44px;
+  --calendar-empty-opacity: 0.5;
+  --image-placeholder-clearart: url('../assets/placeholders/clearart.png');
+
+  /* Chart frame: the sticky sidebar and flush fanart grid of the chart and search pages, dark in both themes
+      */
+  --sidenav-width: 300px;
+  --sidenav-offset: 15px; /* under the fixed header */
+  --sidenav-nav-gap: 25px; /* above the chart nav */
+  --font-size-sidenav-subtitle: 16px;
+  --font-size-sidenav-link: 22px;
+  --color-frame-text: #fff;
+  --color-frame-border: #2d2d2d;
+  --color-frame-heading: #757575;
+  --color-frame-disabled: #444;
+  --color-frame-toggle: #666; /* the VIP sidebar toggle */
+  --color-frame-action: #777; /* an icon link in a nav heading: the My calendars' calendar-clock */
+  --transition-frame: 0.5s;
+
+  /* Advanced filters: the funnel, the slide-out panel, its Chosen fields and noUiSliders, the applied tags and the
+     upsell */
+  --font-size-filter-toggle: 20px;
+  --font-size-filter-toggle-caret: 14px;
+  --filter-toggle-gap: 10px;
+  --filter-toggle-overhang: 12px; /* into the sidebar's right padding */
+  --color-filter-panel-bg: #222;
+  --color-filter-control-bg: #333;
+  --color-filter-control-text: #eee;
+  --color-filter-label: #666;
+  --color-filter-label-value: #eee;
+  --radius-filter-control: 3px;
+  --filter-control-height: 28px;
+  --font-size-filter-control: 13px;
+  --font-size-filter-conjunction: 11px;
+  --filter-row-gap: 20px;
+  --filter-label-gap: 8px;
+  --filter-slider-gap: 10px;
+  --filter-select-padding: 28px; /* room for the caret */
+  --filter-conjunction-width: 51px;
+  --filter-conjunction-overhang: 9px; /* past the field column's right edge */
+  --filter-conjunction-padding: 8px;
+  --filter-conjunction-caret: 18px;
+  --filter-conjunction-caret-offset: 5px;
+  --color-filter-conjunction-menu: #444;
+  --color-filter-chip-bg: #222;
+  --color-filter-chip-remove: #999;
+  --color-filter-option-picked: #555;
+  --color-filter-option-highlight: #444;
+  --color-filter-option-highlight-text: #fff;
+  --color-filter-option-tag-bg: #444;
+  --color-filter-option-tag: #aaa;
+  --slider-height: 15px;
+  --radius-slider: 4px;
+  --radius-slider-connect: 2px;
+  --color-slider-track: #2d2d2d;
+  --color-slider-connect: #444;
+  --shadow-slider-connect: inset 0 0 3px rgb(51 51 51 / 0.45);
+  --color-slider-handle: #666;
+  --radius-slider-handle: 3px;
+  --slider-handle-width: 14px;
+  --slider-handle-height: 22px;
+  --slider-handle-top: -4px;
+  --slider-handle-offset: -7px; /* noUiSlider hangs a handle this far left of its value */
+  --slider-label-width: 31px;
+  --slider-label-height: 20px;
+  --slider-label-top: -3px;
+  --font-size-slider-label: 10px;
+  --filter-site-width: 20px;
+  --filter-site-overhang: 8px;
+  --filter-rating-site-gap: 15px;
+  --filter-rating-inset-end: 15px;
+  --filter-rating-gap: 15px;
+  --filter-buttons-top: 30px;
+  --filter-close-width: 66px;
+  --color-btn-close-bg: #e1e1e1;
+  --color-btn-close-bg-hover: #c7c7c7; /* darken(#e1e1e1, 10%) */
+  --color-btn-close-text: #3d3d3d;
+  --color-btn-close-dark-bg: #3d3d3d;
+  --color-btn-close-dark-bg-hover: #575757; /* lighten */
+  --color-btn-alt-bg: #6d6d6d;
+  --color-btn-alt-bg-hover: #878787; /* lighten */
+  --filter-applied-indent: 16px;
+  --filter-tags-max-height: 130px;
+  --color-filter-tag-bg: #3d3d3d;
+  --filter-tag-height: 22px;
+  --filter-tag-site: 19px;
+  --filter-service-width: 84px;
+  --filter-service-height: 42px;
+  --filter-country-top: 4px;
+  --filter-alert-padding: 8px 10px;
+  --color-bundle-any: #5b982a; /* .btn-any */
+  --color-bundle-free: #1952a7; /* .btn-free */
+  --color-bundle-subscriptions: #333; /* OG had no subscriptions bundle at 2e0405a5f */
+  --upsell-icon-width: 90px;
+  --upsell-image-width: 340px;
+  --upsell-image-width-md: 250px;
+  --upsell-action-width: 120px;
+  --radius-upsell: 8px;
+  --font-size-upsell-icon: 30px;
+  --color-upsell-button: rgb(255 255 255 / 0.1);
+  --color-upsell-button-hover: rgb(255 255 255 / 0.2);
+  --color-upsell-x: #999;
+
+  /* Summary pages: the movie, show, season, episode and person frame */
+  --color-ratings-muted: #aaa; /* vote counts and labels in the ratings bar */
+  --color-fanart-caption-muted: #aaa; /* the role and year in a person fanart's caption */
+  --color-metascore-high: #6c3;
+  --color-metascore-medium: #fc3;
+  --color-metascore-low: #f00;
+  --color-metascore-none: #999;
+  --color-summary-label: #959595; /* stat labels, section nav, "Videos" */
+  --color-summary-hover: light-dark(#000, #fff);
+  --color-summary-alt: #999; /* "(62 episodes)" after a stat */
+  --color-summary-separator: light-dark(#cacaca, #444);
+  --color-summary-tile-bg: light-dark(#eee, #333); /* external links and video tiles */
+  --color-summary-tile-text: light-dark(#666, #ccc);
+  --color-summary-tile-hover-bg: light-dark(#666, #555);
+  --color-summary-poster-border: light-dark(#fff, #000);
+  --shadow-summary-poster: 0 0 20px light-dark(#666, #000);
+  --color-actor-name: light-dark(#777, #aaa);
+  --color-actor-character: light-dark(#000, #fff);
+  --color-actor-count: #aaa; /* a show's "24 episodes" line */
+  --color-actor-dimmed: light-dark(#aaa, #555); /* every other actor while one is hovered */
+  --color-action-bg: light-dark(#fff, #222); /* idle action buttons */
+  --color-action-side-bg: light-dark(rgb(0 0 0 / 0.05), #111);
+  --color-action-side: #999;
+  --color-overview-shade: light-dark(#fff, #1d1d1d);
+  --font-size-summary-label: 13px; /* external link and video tiles */
+  --font-size-summary-h2: 18px; /* the collection or show above the title */
+  --font-size-action: 15px;
+  --font-size-action-icon: 30px;
+  --font-size-item-nav: 100px; /* the prev/next chevrons */
+  --shadow-item-nav: drop-shadow(0 0 10px #666);
+  --item-nav-top: 188px;
+  --item-nav-top-slim: 65px; /* subpages' slim header: OG's 50px (`body.credits_season`), matched to local OG */
+  --radius-certification: 2px;
+  --summary-min-height: 600px;
+  --video-icon-width: 34px;
+  --font-size-video-icon: 22px;
+  --font-size-video-scene: 11px; /* "DURING" above "Credits" */
+  --color-note-updated: #666; /* "— updated Sep 29, 2026" after "Private Notes" */
+  --font-size-notes-icon: 20px; /* the "Add Private Notes" tile's memo */
+  --notes-summary-padding: 8px 10px;
+  --notes-summary-bottom: 20px;
+  --action-height: 54px;
+  --action-icon-width: 50px;
+  --font-size-action-star: 28px;
+  --color-action-side-bg-hover: rgb(0 0 0 / 0.2);
+  --summary-poster-overlap: 190px; /* how far the sidebar poster rises into the fanart */
+  --summary-sticky-gap: 25px;
+  --overview-collapsed: 300px;
+
+  /* Episode summary title (OG at 2e0405a5f). */
+  --episode-title-tag-padding: 3px 5px;
+  --font-size-episode-title-tag: 11px;
+  --episode-title-gap: 5px;
+  --episode-title-certification-gap: 10px;
+  --episode-title-certification-padding: 2px 4px 1px;
+
+  /* Episode list overview. */
+  --episode-overview-collapsed: 200px;
+  --actor-width: 10.15%;
+  --color-scrollbar-thumb: light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.1));
+  --color-scrollbar-track: light-dark(rgb(100 100 100 / 0.1), rgb(100 100 100 / 0.3));
+  /* Where the content column starts, as padding inside a page container: OG's col-md-offset-2 (col-sm-offset-3
+     between 768 and 991px). Percentages resolve against the element that uses them. */
+  --summary-offset: calc((100% + var(--gutter)) / 6);
+  --summary-offset-sm: calc((100% + var(--gutter)) / 4);
+
+  /* Show seasons and episode lists: the Order / Season subnav and the all-episodes rows */
+  --color-season-links-label: #bbb;
+  --color-season-link: var(--gray-light);
+  --color-season-link-selected: light-dark(#000, #fff);
+  --season-links-height: 50px;
+  --summary-poster-overlap-subnav: 245px; /* the sidebar rises past the subnav too */
+  --color-episode-titles-bg: light-dark(#fafafa, #333);
+  --color-episode-stats-bg: light-dark(#f6f6f6, var(--dk-box-accent));
+  --color-episode-stat: #009edf;
+  --color-episode-title: light-dark(#000, #fff);
+  --color-episode-unknown: #aaa;
+  --font-size-episode-title: 20px;
+  --font-size-episode-meta: 13px;
+  --font-size-episode-stat-icon: 16px;
+
+  /* Summary lazy sections: People You Follow and the related band */
+  --color-activity-bg: light-dark(#fafafa, #333); /* .users-wrapper and the selected tab */
+  --color-activity-border: light-dark(#e1e1e1, #333);
+  --color-activity-text: light-dark(#333, #fff);
+  --color-plus-more-bg: #464646;
+  --color-plus-more-text: #fff;
+  --font-size-activity-number: 33px;
+  --font-size-activity-heart: 25px;
+  --font-size-activity-percent: 24px;
+  --font-size-plus-more: 16px;
+  --opacity-activity-idle: 0.4; /* an unselected tab's contents */
+  --activity-tab-padding: 10px 10px 8px;
+  --activity-users-padding: 15px 15px 5px;
+  --activity-avatar-gap: 10px;
+  --activity-avatar-border: 3px;
+  --color-related-bg: var(--gray-darker); /* #recommendations-wrapper, dark in both themes */
+  --color-related-text: #fff;
+  --related-min-height: 432px; /* .fixed-height, so the page doesn't jump when it loads */
+
+  /* Country release panels and notification tables. */
+  --color-data-panel-border: light-dark(#ddd, #444);
+  --color-data-panel-row-border: light-dark(#f0f0f0, #444);
+  --color-data-panel-bg: light-dark(#fff, var(--dk-bg2));
+  --color-data-panel-header-bg: light-dark(#f5f5f5, #333);
+  --color-data-panel-heading: light-dark(#333, #fff);
+  --color-data-panel-hover: light-dark(#fafafa, var(--dk-box-accent));
+  --data-panel-column-width: 150px;
+  --data-panel-flag-size: 20px;
+  --data-panel-label-padding: 3px 4px;
+
+  /* Comment reaction picker. */
+  --reaction-icon-offset: -1px;
+  --reaction-link-gap: 15px;
+  --reaction-popover-gap: 10px;
+  --reaction-popover-block: 9px;
+  --reaction-popover-inline: 5px;
+  --reaction-choice-margin: 3px;
+  --reaction-choice-block: 7px;
+  --reaction-choice-inline: 8px;
+  --reaction-close-width: 30px;
+  --reaction-close-start: 6px;
+  --reaction-close-size: 16px;
+  --reaction-mobile-size: 11px;
+  --reaction-hover-scale: 1.2;
+  --reaction-duration: 0.5s;
+  --color-reaction-hover: rgb(255 255 255 / 0.2);
+  --color-reaction-selected: #000;
+
+  /* Comment cards and reaction summary. */
+  --color-comment-bg: light-dark(#fafafa, var(--dk-box-accent));
+  --color-comment-header-bg: light-dark(#f3f3f3, #333);
+  --color-comment-featured-bg: light-dark(#f1f1f1, var(--dk-box-accent)); /* dark knight's rule outranked .featured */
+  --color-comment-featured-header-bg: light-dark(#e5e5e5, #333);
+  --color-comment-date: light-dark(#333, #eee);
+  --color-comment-quote-bg: light-dark(#fff, #1d1d1d);
+  --color-comment-quote-border: #999;
+  --color-comment-parent-bg: light-dark(#eee, #1d1d1d);
+  --color-comment-parent-header-bg: light-dark(#ddd, #333);
+  --color-comment-parent-quote-bg: light-dark(#ddd, var(--dk-bg2));
+  --color-comment-pre-text: light-dark(#333, #fff);
+  --color-comment-rule: #ddd; /* the text's hr and heading underlines */
+  --color-comment-author: var(--gray-lightish); /* ~1 to ~6 author paragraphs without their own color */
+  --color-comment-mark-bg: light-dark(#fcf8e3, #e2e2af);
+  --color-comment-mark-text: #333; /* inherited in light, set in dark */
+  --color-comment-reply-border: light-dark(#eee, #444);
+  --color-comment-inline-title: light-dark(#e1e1e1, var(--dk-bg2)); /* user pages on phones, */
+  --color-comment-reply-border-featured: light-dark(#ddd, #444);
+  --color-comment-open-outline: light-dark(#c2dff7, #444); /* a card with its replies open */
+  --shadow-comment-open: 0 0 8px light-dark(rgb(102 175 233 / 0.6), rgb(128 128 128 / 0.6));
+  --color-comment-action: var(--brand-secondary); /* the under-comment links */
+  --color-comment-reaction: #ff9458;
+  --color-comment-watched: var(--brand-tertiary);
+  --color-comment-edit: var(--brand-success);
+  --color-comment-delete: var(--brand-primary);
+  --color-comment-pill-op: var(--brand-secondary);
+  --color-comment-pill-parent: light-dark(var(--brand-secondary), var(--gray)); /* dark knight greyed every pill but OP */
+  --color-comment-pill-blocked: light-dark(red, var(--gray)); /* OG's literal `red` */
+  --shadow-comment-blocked: 0 0 8px rgb(237 28 36 / 0.8); /* a blocked member's card, hovered */
+  --shadow-comment-blocked-shown: 0 0 8px rgb(237 28 36 / 0.3); /* and once clicked open */
+  --font-size-comment-meta: 13px; /* the author row and the under-comment links */
+  --font-size-comment-icon: 20px;
+  --font-size-comment-reaction-icon: 15px;
+  --font-size-pill: 11px;
+  --comment-avatar: 40px;
+  --comment-rating-corner: 24px;
+  --comment-padding: 20px;
+  --comment-reply-indent: 62px; /* inline replies line up with the author name */
+  /* A comment's own page. */
+  --color-comment-page-band: light-dark(#f3f3f3, #333); /* .above-comment-bg, dark knight's $dk-box-bg-color */
+  --comment-page-band: 67px; /* the band behind the comment's author row */
+  --comment-page-offset: 90px; /* from the band's top to the comment text */
+  --comment-page-inset: 8px; /* the author row's start padding on the band */
+  --comment-collapsed-height: 300px; /* read more */
+  --comment-shade-height: 100px;
+  --user-comments-padding: 20px; /* #user-comments, */
+  --blur-spoiler: blur(8px);
+
+  /* The new comment form. */
+  --color-comment-form-input-bg: light-dark(#fafafa, var(--dk-box-accent));
+  --color-comment-form-help-bg: light-dark(#f6f6f6, #333);
+  --color-comment-form-help-text: #aaa;
+  --color-comment-form-toggle-bg: light-dark(#fafafa, #333);
+  --color-comment-form-toggle-border: light-dark(#e5e5e5, #333);
+  --color-comment-form-toggle-text: #999;
+  --color-comment-form-toggle-hover: light-dark(#000, #fff);
+  --color-comment-form-toggle-on: light-dark(#666, #777);
+  --color-comment-form-short: var(--color-link); /* the word count under 5 */
+  --color-comment-add: var(--color-list-add); /* "Add comment" (.new-comment-focus.main) */
+  --color-comment-add-hover: #2b7a2b; /* darken */
+  --font-size-comment-form-help: 11px;
+  --font-size-comment-add-icon: 17px; /* the thin plus after the summary heading's "Add comment" */
+  --comment-form-input-padding: 20px;
+  --comment-form-toggle-padding: 7px 12px 6px;
+  --comment-form-help-padding: 7px 0 8px 15px;
+  --radius-comment-form-help: 0 0 6px 6px;
+  --radius-comment-form-button: 3px;
+
+  /* The card's reply box and edit form. */
+  --color-comment-edit-input-bg: light-dark(#fff, var(--dk-box-accent));
+  --color-comment-reply-input-bg: light-dark(#fff, #333); /* dark knight's $dk-box-bg-color */
+  --color-comment-inline-input-border: light-dark(#fbfbfb, #666);
+  --color-comment-inline-input-focus: light-dark(#ddd, #666);
+  --color-comment-edit-toggle-bg: light-dark(#fff, #333);
+  --comment-inline-input-padding: 10px;
+  --radius-comment-inline-input: 5px;
+  --comment-reply-field-gap: 10px; /* the avatar's 40px column in a 50px margin */
+  --comment-reply-help-inset: 11px;
+  --comment-edit-submit-padding: 5px 12px;
+
+  /* Stacking (Bootstrap 3; OG's header sits at 1500) */
+  --z-dropdown: 1000;
+  --z-navbar-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-header: 1500;
+  --z-toast: 30; /* under the header, which it hangs below */
+  --z-loading-bar: 9999;
+  --z-loading: 99999;
+  /* Notes and comment-style cards. */
+  --color-note-bg: light-dark(#fafafa, #292929);
+  --color-note-header: light-dark(#f3f3f3, #333);
+  --color-note-avatar-border: light-dark(#555, #ccc);
+  --color-note-pill: light-dark(#999, #555);
+  --color-note-media: light-dark(#2b678f, #555);
+  --color-note-history: light-dark(#8e44ad, #555);
+  --color-note-collection: light-dark(#16a085, #555);
+  --color-note-rating: light-dark(#b70a0a, #555);
+  --color-note-inline-title: light-dark(#e1e1e1, #333);
+  --color-note-vip-star: light-dark(#aaa, #888);
+  --note-padding: 20px;
+  /* Notes-page owner controls (OG comment manage links). */
+  --note-manage-gap: 15px;
+  --note-manage-top: 3px;
+  --radius-note: 2px;
+  --note-header-padding: 20px 20px 10px;
+  --note-header-min-height: 67px;
+  --note-avatar-size: 40px;
+  --note-avatar-border: 2px;
+  --note-avatar-offset: -8px;
+  --note-author-offset: -4px;
+  --note-author-gap: 12px;
+  --note-labels-top: 4px;
+  --font-size-note-author: 13px;
+  --font-size-note-pill: 11px;
+  --line-height-note-pill: 1.1;
+  --note-pill-padding: 1px 4px;
+  --note-pill-gap: 5px;
+  --note-vip-margin: 4px;
+  --note-vip-star-size: 24px;
+  --note-vip-star-top: -6px;
+  --note-vip-star-offset: -26px;
+  --note-text-max-height: 300px;
+  --note-text-shade-height: 100px;
+  --note-spoiler-blur: 8px;
+  --note-row-bottom: 25px;
+  --note-inline-title-padding: 5px 7px;
+
+  /* Section toolbar (OG's profile subnav, shared by activity pages). */
+  --color-toolbar-bg: light-dark(#fafafa, #161616);
+  --toolbar-padding: 15px;
+  --toolbar-gap: 15px;
+  --toolbar-group-margin: 9px;
+  --toolbar-group-padding: 6px 20px;
+  --font-size-toolbar-count: 13px; /* the blue ".interactions" counter */
+  /* History and library subnav. */
+  --history-count-gap: 15px;
+  --history-icon-gap: 8px;
+  --history-pagination-end: 6px;
+  --font-size-history-count-icon: 18px; /* .interactions .trakt-icon-document, .trakt-icon-check */
+  --dropdown-limit-10-height: 250px; /* .dropdown-menu.limit-10: ten rows */
+  --font-size-date-range-icon: 22px; /* .btn-date-range, 1.6em of the subnav's 14px */
+  --font-size-date-range-title: 11px;
+  --color-date-range-title: light-dark(#666, #aaa);
+  --font-size-date-range-button: 20px;
+  --font-size-date-range-chip: 12px;
+  --date-range-gap: 10px;
+  --date-range-padding: 6px 11px 10px;
+  --font-size-filter-watchnow: 20px; /* #filter-watchnow-launcher */
+  --watchnow-filter-list-height: 240px;
+  --font-size-modal-lead: 16px; /* .checkin-modal h2 */
+  --font-size-day-divider-runtime: 14px; /* h2 .time-spent */
+  --color-day-divider-runtime: #aaa;
+  --color-subnav-text-bg: light-dark(#f3f3f3, #252525); /* .subnav-text, the library's description band */
+  --font-size-subnav-text: 13px;
+  --subnav-text-padding: 10px; /* .text's padding-top, then the paragraph's margin */
+  /* Episode screenshot banner. */
+  --episode-badge-padding: 4px;
+  --font-size-episode-badge: 11px;
+  --episode-badge-letter-spacing: 0.5px;
+  --episode-badge-opacity: 0.7;
+
+  /* Watch Now: the sidebar block, its phone button and the where-to-watch modal. */
+  --color-watch-now-bg: #444;
+  --color-watch-now-under: #ccc;
+  --color-watch-now-tiles-bg: light-dark(#222, #333);
+  --shadow-watch-now: 0 5px 20px light-dark(#666, #000);
+  --color-watch-now-section: light-dark(#666, #fff);
+  --color-service-badge: #333; /* the "4K" circle */
+  --color-service-badge-bg: #fff;
+  --service-country-padding: 4px 3px; /* another country's code */
+  --font-size-service-country: 9px;
+  --service-check-padding: 4px; /* a picked service's check */
+  --font-size-service-check: 15px;
+  --color-service-off: #333; /* a service the picker hasn't picked */
+  --service-off-opacity: 0.75;
+  --radius-service: 3px;
+  --watch-now-tile-height: 39px;
+  --watch-now-tile-height-md: 31px; /* under 1200px */
+  --watch-now-tile-height-sm: 38px; /* under 992px, and the phone button */
+  --watch-now-phone-tile-width: 80px;
+  --watch-now-modal-tile-width: 130px;
+  --watch-now-modal-tile-height: 57px;
+  --watch-now-modal-tile-width-sm: 100px;
+  --watch-now-modal-tile-height-sm: 49px;
+  --select-arrow-inverse: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4.95 10'%3E%3Cpath fill='%23fff' d='M1.41 4.67 2.48 3.18 3.54 4.67zM3.54 5.33 2.48 6.82 1.41 5.33z'/%3E%3C/svg%3E");
+  /* List picker and new-list modal (OG desktop popover/checkin modal values). */
+  --list-border: 1px;
+  --list-spinner-duration: 1s;
+  /* Copy and move list destinations (OG copy-list popover). */
+  --list-transfer-width: 300px;
+  --list-transfer-gap: 10px;
+  --list-transfer-header-line: 18px;
+  --list-transfer-divider-gap: 7px;
+  --list-transfer-list-padding: 5px;
+
+  --list-picker-width: 302px;
+  --list-picker-gap: 5px;
+  --list-header-block: 8px;
+  --list-row-size: 13px;
+  --list-row-gap: 2px;
+  --list-row-icon: 13px;
+  --list-scroll-height: 200px;
+  --list-privacy-size: 10px;
+  --list-privacy-inline: 4px;
+  --list-link-opacity: 0.2;
+  --list-card-height: 40px;
+  --list-card-width: 35px;
+  --list-card-small-height: 34px;
+  --list-card-small-width: 28px;
+  --list-action-line: 34px;
+  --list-selected-line: 20px;
+  --list-subtitle-line: 14px;
+  --list-side-inline: 7px;
+  --list-modal-heading-top: 80px;
+  --list-name-height: 44px;
+  --list-description-height: 113px;
+  --list-form-size: 16px;
+  --list-form-gap: 20px;
+  --list-select-height: 31px;
+  --list-submit-radius: 9px;
+  --list-collaborators-height: 38px;
+
+  /* List editor collaborator candidates. */
+  --list-candidate-avatar: 24px;
+  --color-list-candidate-chip: light-dark(#ddd, #444);
+  --list-sort-direction-width: 50px;
+  --list-avatar-size: 110px;
+  --list-avatar-border: 5px;
+  --color-list-choice: light-dark(#666, #555);
+
+  /* Report item modal and VIP sidebar tools, OG's report/check-in and vip-actions values. */
+  --report-title-gap: 3px;
+  --report-label-gap: 5px;
+  --report-label-inline-offset: 1px;
+  --report-control-padding: 10px;
+  --radius-report: 3px 3px var(--radius-dialog) var(--radius-dialog);
+  --color-media-tools: light-dark(#666, #ccc);
+  --color-report-label: light-dark(#666, #999);
+  --report-select-height: 31px;
+  --color-report-error: #a94442;
+  --color-report-error-bg: #f2dede;
+  --color-report-invalid-bg: #fde9e9;
+  --media-tools-padding: 8px 0 5px;
+  --media-tools-row-padding: 4px;
+  --media-tools-icon-column: 22px;
+  --media-tools-line-height: 1.2;
+  --media-tools-under-margin: -2px;
+  --font-size-media-tools-under: 10px;
+}
+
+/* Optional library metadata (red-era OG). */
+:root {
+  --collection-metadata-width: 300px;
+  --collection-metadata-padding: 10px 15px 15px;
+  --collection-metadata-row-gap: 10px;
+  --collection-metadata-column-gap: 14px;
+  --collection-label-gap: 3px;
+  --collection-metadata-save-gap: 20px;
+}
+
+/* Library poster overlay. */
+:root {
+  --collection-overlay-bg: rgba(0, 0, 0, 0.7);
+  --collection-overlay-color: #fff;
+  --collection-overlay-rule: #666;
+  --collection-overlay-tag: #eee;
+  --collection-overlay-padding-top: 6px;
+  --collection-overlay-gap: 10px; /* .video's padding-bottom */
+  --collection-overlay-audio-gap: 15px; /* .audio's padding-top */
+  --collection-overlay-item-margin: 0 3px 6px;
+  --font-size-collection-logo: 24px;
+  --font-size-collection-logo-wide: 30px; /* Blu-ray, Video CD */
+  --font-size-collection-logo-small: 20px; /* digital, Dolby and DTS */
+  --font-size-collection-tag: 14px;
+}
+
+/* Discover: the "Top... Last Week" sliders.
+   Dark in both themes, like the frame. */
+:root {
+  --slider-height-trends: 600px; /* Trends only (`#trends .popular-items-wrapper`), from a 800px-tall viewport up */
+  --slider-height-short: calc(100vh - 50px); /* every other fanart slider, and Trends below 800px: OG's 50px header */
+  --slider-min-height-phone: 500px;
+  --color-slider-bg: #111;
+  --color-slider-shade: rgb(0 0 0 / 0.6); /* over the fanart */
+  --color-slider-text: #fff;
+  --color-slider-muted: #aaa; /* "watchers", "plays", "libraries" */
+  --color-slider-link: #ccc; /* "See more" */
+  --slider-titles-top: 30px;
+  --slider-titles-inline: 30px;
+  --slider-titles-top-phone: 15px;
+  --slider-titles-inline-phone: 15px;
+  --font-size-slider-title: 14px;
+  --slider-nav-top: 50px; /* the chevrons' hit area, top and bottom */
+  --slider-nav-bottom: 100px;
+  --slider-nav-inline: 20px;
+  --transition-slider: 0.5s;
+  --slider-poster-width: 210px;
+  --slider-poster-width-phone: 200px;
+  --shadow-slider-poster: 0 0 30px #222;
+  --slider-quick-icons-height: 34px;
+  --color-slider-quick-icons: rgb(0 0 0 / 0.6);
+  --slider-stats-top: 16px; /* OG's 10px margin plus the 6px line gap under its inline-block poster */
+  --slider-stats-bottom: 6px; /* the stats' own line gap, which OG's centring counted */
+  --slider-stat-inline: 15px;
+  --font-size-slider-stat: 18px;
+  --font-size-slider-stat-label: 12px;
+  --slider-rank-width: 30px;
+  --slider-rank-height: 26px;
+  --font-size-slider-rank: 13px;
+  --color-slider-rank: #ccc;
+  --color-slider-rank-bg: rgb(0 0 0 / 0.5);
+  --color-slider-rank-hover: #111;
+}
+
+:root {
+  /* Settings frame and hidden-item restoration (OG settings/hidden_items). */
+  --settings-header-bottom: 65px;
+  --settings-poster-tile: 240px 240px;
+  --settings-poster-opacity: 0.3;
+  --settings-poster-blur: 4px;
+  --color-settings-header-bg: #000;
+  --color-settings-tabs-bg: rgb(0 0 0 / 0.5);
+  --settings-tab-inline: 17px;
+  --settings-tabs-height: 40px;
+  --notice-radius: 8px;
+  --hidden-label-gap: 3px;
+  --hidden-count-gap: 15px;
+  --notice-padding: 12px 20px;
+  --notice-icon-margin: -3px 7px;
+  --notice-icon-size: 26px;
+  --hidden-hint-start: 25px;
+  --hidden-hint-end: 5px;
+  --hidden-faded-opacity: 0.3;
+  --hidden-card-border: 1px;
+  --hidden-avatar-border: 3px;
+  --hidden-title-line: 18px;
+  --hidden-subtitle-line: 13px;
+}
+
+/* The General settings form: sidebar, panels, fields and the save bar. */
+:root {
+  --settings-top-padding: 20px; /* section#main-settings */
+  --settings-sidebar-top: 90px; /* the sticky sidebar, below the fixed header */
+  --settings-scroll-gap: 15px; /* a #panel jump stops this far below the header */
+  --shadow-settings-panel: 0 1px 1px rgb(0 0 0 / 0.05); /* Bootstrap's .panel */
+  --settings-panel-heading-padding: 8px;
+  --settings-panel-icon-gap: 7px;
+  --settings-panel-body-padding: 20px 15px 5px;
+  --settings-field-gap: 15px; /* .form-group */
+  --settings-label-top: 7px; /* .form-horizontal .control-label and .checkbox */
+  --settings-label-top-tall: 15px; /* .control-label.avatar */
+  --settings-checkbox-margin: 4px 5px 0 0;
+  --settings-help-gap: 5px; /* .under-help under a select */
+  --settings-check-help-drop: -3px; /* .under-help beside a checkbox */
+  --settings-select-gap: 10px; /* .inline-selects select */
+  --settings-avatar-size: 50px;
+  --settings-avatar-border: 2px;
+  --color-settings-avatar-border: light-dark(#464646, #666);
+  --settings-inline-button-gap: 10px; /* .btn-settings-inline.more-left */
+  --settings-inline-button-padding: 3px 7px;
+  --radius-settings-inline-button: 6px;
+  --settings-save-padding: 20px 10px; /* .buttons */
+  --settings-save-button-padding: 10px 16px;
+  --settings-save-blur: 4px;
+  --color-settings-save-bg: light-dark(rgb(255 255 255 / 0.8), rgb(29 29 29 / 0.8));
+  --color-settings-save-border: light-dark(#ddd, #444);
+  --font-size-settings-alert: 13px; /* .alert.inline-notice */
+  --settings-panel-link-top: 3px; /* the heading's "More Info" */
+  --settings-panel-vip-margin: -3px -9px 0 0; /* the heading's VIP label */
+  --settings-field-vip-top: -2px; /* a field's small VIP label: 5px below the row's top, above its checkbox */
+  --settings-services-margin: 0 -5px; /* the Favorite Services tiles (.streaming-links a) */
+  --settings-service-width: 90px;
+  --settings-service-height: 42px;
+  --settings-service-padding: 0 5px 10px;
+  --settings-favorites-top: 10px; /* .btn-settings-inline.more-top */
+  /* The favorites picker dialog. */
+  --favorites-picker-gap: 10px;
+  --favorites-picker-control-min: 200px;
+  --favorites-picker-height: 360px;
+  --favorites-picker-inset: 15px; /* room for a picked tile's check */
+  --favorites-picker-tile-padding: 20px 5px 0;
+}
+
+/* The Data tab and the sync pages: section rules, the syncs table and the sync details tables. */
+:root {
+  --settings-section-gap: 20px; /* h2's top margin, and h3.help-text's bottom one */
+  --settings-rule-gap: 10px; /* .h2-hr margin-top */
+  --settings-rule-gap-wide: 40px; /* .h2-hr.more-top */
+  --color-settings-rule: light-dark(#cacaca, #444);
+  --color-settings-heading-aside: #999; /* a see-more floated in the h2 */
+  --settings-pagination-end: 26px; /* .pagination-bottom: the list's 20px margin plus its inline-block line gap */
+  --syncs-date-width: 200px; /* .first-date */
+  --syncs-service-width: 130px; /* .watch-link */
+  --syncs-tile-width: 90px; /* .streaming-links a */
+  --syncs-tile-height: 42px;
+  --syncs-tile-padding: 0 5px;
+  --font-size-syncs-helper: 12px; /* td .helper */
+  --color-syncs-helper: #999;
+  --color-syncs-details: #666; /* a.helper.skipped */
+  --syncs-undo-padding: 3px 5px; /* .btn.smaller */
+  --font-size-syncs-undo: 12px;
+  --radius-syncs-undo: 6px;
+  --syncs-undo-icon-gap: 4px;
+  --syncs-undone-opacity: 0.5; /* tr.undone */
+  --color-sync-good: var(--brand-success);
+  --color-sync-bad: var(--brand-danger);
+  --color-sync-good-underline: #255625; /* darken */
+  --color-sync-bad-underline: #511816; /* darken(#c93c37, 30%) */
+  --color-sync-undone: var(--brand-danger);
+  --color-sync-undone-border: var(--color-btn-danger-border);
+}
+
+/* The Notifications tab's tables. */
+:root {
+  --notifications-service-width: 32px; /* th.service, td.service */
+  --font-size-notifications-service: 16px;
+  --notifications-checkbox-margin: 4px auto 0; /* level with the row label's first line */
+}
+
+/* Discover: the Featured Lists tiles and the Summer TV Shows showcase. Dark in both themes, like the sliders. */
+:root {
+  --featured-list-height: 240px;
+  --featured-list-height-tablet: 200px; /* and phones: two columns */
+  --featured-list-logo-width: 70%;
+  --featured-list-logo-height: 70px;
+  --featured-list-logo-height-tablet: 50px;
+  --featured-list-zoom: 1.1; /* the background, on hover */
+  --featured-list-title-gap: 20px;
+  --font-size-featured-list-title: 16px;
+  --line-height-featured-list-title: 1.2;
+  --color-featured-list-label: var(--brand-success); /* "Updated Daily" (`.label-success`) */
+  --featured-list-label-gap: 10px;
+  --featured-list-label-padding: 4px 6px 3px;
+  --radius-featured-list-label: 3px;
+  --font-size-featured-list-label: 10px;
+  --letter-spacing-featured-list-label: 0.1em;
+  --showcase-info-width: 60%; /* the text column, flush right */
+  --showcase-info-end: 20%;
+  --showcase-info-lift: -150px; /* its top, from the slide's middle */
+  --showcase-poster-width: 200px;
+  --showcase-poster-offset: -230px; /* the poster, left of the text */
+  --color-showcase-link: #eee;
+  --font-size-showcase-title: 30px;
+  --showcase-title-gap: 15px;
+  --showcase-meta-gap: 2px;
+  --showcase-overview-gap: 20px;
+  --font-size-showcase-overview: 16px;
+  --showcase-overview-height: 242px;
+  --showcase-overview-lines: 11;
+}
+
+/* Discover: the Recent Comments block. The titles column is black in both themes; the comment column is a light
+   or dark veil over the same fanart. */
+:root {
+  --recent-comments-min-height: calc(100vh - 50px); /* OG's 50px header */
+  --recent-comments-titles-width: 50%;
+  --recent-comments-titles-width-tablet: 40%; /* below 1200px */
+  --recent-comments-fanart-opacity: 0.4;
+  --recent-comments-fanart-position: 0 10%;
+  --color-recent-comments-titles-bg: #000;
+  --color-recent-comments-link: #ccc;
+  --color-recent-comments-link-active: #fff; /* hovered and selected */
+  --color-recent-comments-veil: light-dark(rgb(255 255 255 / 0.8), rgb(0 0 0 / 0.6));
+  --color-recent-comments-heading: light-dark(#111, #fff);
+  --color-recent-comments-subheading: light-dark(#111, #eee);
+  --color-recent-comments-year: var(--gray-light);
+  --color-recent-comments-author-bg: light-dark(rgb(220 220 220 / 0.5), var(--dk-bg2));
+  --color-recent-comments-quote-bg: light-dark(rgb(255 255 255 / 0.5), var(--color-comment-quote-bg));
+  --recent-comments-subnav-padding: 20px 20px 0 30px;
+  --recent-comments-subnav-padding-phone: 10px 5px 0 15px;
+  --font-size-recent-comments-heading: 14px; /* "Recent Comments" */
+  --recent-comments-links-padding: 30px 0;
+  --recent-comments-links-padding-phone: 30px 0 5px;
+  --recent-comments-inset: 30px; /* the titles and the selected title, from the column's start */
+  --recent-comments-inset-phone: 15px;
+  --recent-comments-link-gap: 15px;
+  --font-size-recent-comments-year: 14px;
+  --recent-comments-title-top: 24px;
+  --recent-comments-title-top-phone: 15px;
+  --font-size-recent-comments-title: 26px;
+  --font-size-recent-comments-title-phone: 20px;
+  --font-size-recent-comments-title-year: 18px;
+  --font-size-recent-comments-title-year-phone: 16px;
+  --font-size-recent-comments-subtitle: 16px;
+  --recent-comments-comment-padding: 20px 30px 80px; /* the bottom clears the author row */
+  --recent-comments-comment-padding-phone: 20px 15px 80px;
+  --transition-recent-comments: 0.5s;
+}
+
+/* Sortable list filters and streaming chips. */
+:root {
+  --list-filter-icon-gap: 5px;
+  --color-watchnow-chips-bg: light-dark(#eee, #252525);
+  --watchnow-chips-country-top: -6px;
+  --watchnow-chips-country-padding: 4px 3px;
+  --font-size-watchnow-chips-country: 9px;
+  --watchnow-chips-heading-margin: 2px 0 0;
+  --watchnow-chips-margin: 10px -5px 0;
+  --watchnow-chips-width: 90px;
+  --watchnow-chips-height: 42px;
+  --watchnow-chips-padding: 0 5px 10px;
+}
+
+/* Progress page */
+:root {
+  --progress-row-margin: 20px 10px; /* .row.posters > div's 20px on top, .row.posters' 10px below */
+  --font-size-progress-row: 13px;
+  --line-height-progress-row: 1.2;
+  --font-size-progress-title: 22px;
+  --progress-title-actions-width: 60px; /* the title's `max-width: calc(100% - 60px)`, room for its icons */
+  --color-progress-action: #ccc;
+  --progress-action-gap: 7px;
+  --progress-action-nudge: 2px;
+  --progress-rewatching-badge-start: -10px;
+  --color-progress-rewatching: #aaa;
+  --progress-status-icon-nudge: 2px; /* `.rewatching .icon`'s margin-bottom */
+  --progress-dropped-icon-gap: 2px; /* `.dropped.icon`, from the revision that added the tab */
+  --opacity-progress-loading: 0.15; /* `#progress-wrapper .row.loading`, while a row reloads */
+
+  /* The tick bar and its percent */
+  --tick-bar-height: 15px;
+  --tick-bar-margin: 15px;
+  --tick-bar-height-season: 8px;
+  --tick-bar-percent-gap: 15px; /* the gutter, less the percent's -5px margin */
+  --font-size-tick-bar-percent: 24px;
+  --line-height-tick-bar-percent: 1.9;
+  --font-size-tick-bar-percent-season: 18px;
+  --tick-bar-percent-season-nudge: -6px;
+  --transition-tick-bar: 0.5s;
+
+  /* The seasons band */
+  --color-progress-seasons-bg: light-dark(#fafafa, #333);
+  --progress-seasons-padding: 10px 20px;
+  --progress-seasons-margin: 10px -20px 0;
+  --progress-seasons-padding-phone: 15px 10px;
+  --progress-seasons-margin-phone: 10px -10px 0;
+  --color-progress-toggle-link: light-dark(var(--brand-primary), #fff);
+  --color-progress-toggle-icon: light-dark(#666, #fff);
+  --font-size-progress-toggle-icon: 10px;
+  --progress-season-info-margin: 5px 0 2px;
+  --color-progress-season-link: light-dark(#333, #eee);
+  --font-size-progress-season-link: 11px;
+  --font-size-progress-season-hide: 10px;
+  --color-progress-season-count: #aaa;
+  --font-size-progress-season-count: 10px;
+  --progress-season-count-nudge: 3px;
+  --progress-episodes-margin: 4px;
+  --progress-episode-margin: 2px;
+  --progress-episode-gap: 12px;
+  --font-size-progress-episode: 12px;
+  --font-size-progress-episode-icon: 16px;
+  --color-progress-episode-done: #1db75e;
+
+  /* A label over a poster's bottom-left corner (`.posters h4.bottom`) */
+  --poster-label-bottom: 8px;
+  --poster-label-start: 10px;
+  --poster-label-padding: 3px 5px;
+  --font-size-poster-label: 11px;
+}
+
+/* General settings preference panels: OG instruction bands and sorting controls. */
+:root {
+  --settings-direction-width: 50px;
+  --settings-direction-gap: 15px;
+  --settings-check-min-height: 30px;
+  --settings-instruction-bottom: 20px;
+  --settings-instruction-middle: 25px;
+  --settings-instruction-padding: 10px 8px;
+  --settings-instruction-body-bottom: 15px;
+  --settings-instruction-phone-inline: 15px; /* the body's inline padding once fields stack */
+  --font-size-settings-instruction: 13px; /* h3.instructions */
+  --color-settings-instruction-bg: light-dark(#fafafa, #000); /* in */
+  --color-settings-instruction-border: light-dark(#eee, #444);
+  --font-size-settings-link: 11px;
+}
+
+/* The Advanced settings tab: action blocks, emoji notices, the account limits table and the danger zone
+. */
+:root {
+  --settings-block-indent-phone: 30px; /* .buttons.data on phones */
+  --settings-action-bottom: 20px; /* .buttons.data */
+  --settings-button-padding: 10px 16px;
+  --settings-button-gap: 20px; /* .btn-danger-zone's right margin */
+  --settings-button-icon-gap: 10px;
+  --settings-title-label-margin: -5px 0 0 8px; /* h2.with-vip-label .label-vip */
+  --settings-reset-padding: 10px; /* .reset-zone */
+  --color-settings-reset-bg: light-dark(#eee, var(--dk-bg2));
+  --settings-notice-emoji-size: 22px; /* .side-icon */
+  --settings-notice-emoji-margin: 0 10px 0 -5px;
+  --settings-notice-indent: 35px; /* .indented-line */
+  --color-notice-link-hover: #ccc;
+  --limits-cell-padding: 8px;
+  --limits-column-padding: 20px;
+  --limits-spacer: 40px; /* td.spacer: no width, 20px padding each side */
+  --limits-label-margin: -3px 3px 0 0;
+  --color-limits-selected: light-dark(rgb(237 28 36 / 0.1), rgb(237 28 36 / 0.25));
+  --color-limits-selected-vip: light-dark(rgb(237 28 36 / 0.1), rgb(237 28 36 / 0.2));
+  --limits-signup-margin: 5px 0;
+  --limits-signup-padding: 3px 5px;
+  --radius-limits-signup: 4px; /* --btn-radius-less */
+  --color-danger-zone-bg: #111; /* both themes */
+  --color-danger-zone-text: #fff;
+  --color-danger-zone-rule: #000;
+  --color-danger-zone-stripe: #ed1c24;
+  --color-danger-zone-stripe-alt: #fff;
+  --danger-zone-stripe: 20px;
+  --danger-zone-divider-padding: 2px;
+  --danger-zone-divider-gap: 10px;
+  --danger-zone-bottom: 10px; /* .danger-zone .container */
+  --danger-zone-notice-margin: 20px 0 30px; /* .delete-permanent-notice */
+  --color-danger-zone-button-bg: #444;
+  --color-danger-zone-button-border: var(--brand-primary);
+  --danger-zone-button-border: 2px;
+}

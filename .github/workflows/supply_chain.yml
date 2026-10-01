@@ -1,11 +1,9 @@
-name: The Sanctum Wards aka Supply Chain
+# From trakt-web. Exact pins, allowScripts drift, frozen install, provenance, dependency review.
+name: VIP Bouncer aka Supply Chain
 
+# Checks run locally by default; this workflow is manual.
 on:
-  pull_request:
-    types: [opened, reopened, synchronize, ready_for_review]
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -14,14 +12,17 @@ permissions:
 jobs:
   hardened-audit:
     if: github.event.pull_request.draft != true
-    name: Warding the Inner Sanctum
+    name: Velvet Rope aka Hardened Audit
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/client
     permissions:
       contents: read
       pull-requests: read
 
     steps:
-      - name: Sealing the Outbound Gates aka Harden Runner
+      - name: Lock the Side Door aka Harden Runner
         uses: step-security/harden-runner@v2
         with:
           egress-policy: block
@@ -36,15 +37,15 @@ jobs:
             registry.npmjs.org:443
             release-assets.githubusercontent.com:443
 
-      - name: Secure the Evidence aka Checkout Code
-        uses: actions/checkout@v5
+      - name: Grab the Remote aka Checkout Code
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Setup Deno Environment
+      - name: Set Up the Couch aka Setup Deno
         uses: ./.github/actions/setup-deno
 
-      - name: Enforce Exact Version Pins aka Forbid Semver Ranges
+      - name: No Fast-Forwarding aka Forbid Semver Ranges
         run: |
           set -euo pipefail
           OFFENDERS=$(
@@ -53,7 +54,7 @@ jobs:
               | to_entries[]
               | select(.value | test("^[\\^~]"))
               | "\(.key)@\(.value)"
-            ' projects/client/package.json
+            ' package.json
           )
           if [ -n "$OFFENDERS" ]; then
             echo "::error::Non-exact version ranges detected. Pin exact versions."
@@ -61,7 +62,7 @@ jobs:
             exit 1
           fi
 
-      - name: Ward Against Allowlist Drift aka Block Silent Postinstall Grants
+      - name: No Plus-Ones aka Block Silent Postinstall Grants
         if: github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -69,10 +70,11 @@ jobs:
         run: |
           set -euo pipefail
           git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
-          BEFORE=$(git show "origin/${{ github.event.pull_request.base.ref }}":deno.json | jq '.allowScripts | length')
-          AFTER=$(jq '.allowScripts | length' deno.json)
+          # A base branch without deno.json (the first PR) counts as an empty allowlist.
+          BEFORE=$( (git show "origin/${{ github.event.pull_request.base.ref }}":deno.json 2>/dev/null || echo '{}') | jq '.allowScripts // [] | length')
+          AFTER=$(jq '.allowScripts | length' ../../deno.json)
           if [ "$AFTER" -gt "$BEFORE" ]; then
-            if gh pr view "$PR_NUMBER" --json labels -q '.labels[].name' | grep -qx 'allowlist-change'; then
+            if gh pr view "$PR_NUMBER" --repo trakt/og --json labels -q '.labels[].name' | grep -qx 'allowlist-change'; then
               echo "allowScripts grew from $BEFORE to $AFTER — label present, allowed."
             else
               echo "::error::allowScripts grew from $BEFORE to $AFTER without 'allowlist-change' label."
@@ -81,11 +83,10 @@ jobs:
             fi
           fi
 
-      - name: Frozen Install aka Verify Lockfile Integrity
+      - name: Rewatch From the Lockfile aka Frozen Install
         run: deno task install
 
-      - name: Verify NPM Provenance aka Audit Signatures
-        working-directory: projects/client
+      - name: Check the Credits aka Audit Signatures
         continue-on-error: true
         run: |
           set -euo pipefail
@@ -99,15 +100,19 @@ jobs:
           fi
 
   dependency-review:
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft != true
-    name: The Lockfile Inquisition aka Dependency Review
+    # Dependency review runs when this workflow handles a pull request.
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft != true && !github.event.repository.private
+    name: Guest List aka Dependency Review
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/client
     permissions:
       contents: read
       pull-requests: write
 
     steps:
-      - name: Sealing the Outbound Gates aka Harden Runner
+      - name: Lock the Side Door aka Harden Runner
         uses: step-security/harden-runner@v2
         with:
           egress-policy: block
@@ -124,11 +129,11 @@ jobs:
             release-assets.githubusercontent.com:443
             www-api.ibm.com:443
 
-      - name: Secure the Evidence aka Checkout Code
-        uses: actions/checkout@v5
+      - name: Grab the Remote aka Checkout Code
+        uses: actions/checkout@v7
 
-      - name: Scrutinizing the Lockfile Delta aka Dependency Review
-        uses: actions/dependency-review-action@v4
+      - name: Screen the New Releases aka Dependency Review
+        uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: high
           comment-summary-in-pr: on-failure

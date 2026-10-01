@@ -1,1 +1,0 @@
-export const NOTE_CHARACTER_LIMIT = 500;

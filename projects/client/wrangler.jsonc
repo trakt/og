@@ -1,43 +1,17 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "trakt-web",
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "trakt-og",
   "main": ".svelte-kit/cloudflare/_worker.js",
-  "compatibility_date": "2026-03-30",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
+  "compatibility_date": "2026-09-29",
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "binding": "ASSETS",
     "directory": ".svelte-kit/cloudflare"
   },
+  // Served only on og.trakt.tv. wrangler deploy creates the DNS record and cert (same pattern as the auth worker).
+  "routes": [{ "pattern": "og.trakt.tv", "custom_domain": true }],
+  "workers_dev": false,
   "observability": {
-    "enabled": true,
-    "head_sampling_rate": 0.1
-  },
-  "version_metadata": {
-    "binding": "CF_VERSION_METADATA"
-  },
-  "vars": {
-    "TYPESENSE_SERVER": "search.trakt.tv"
-  },
-  "upload_source_maps": true,
-  "r2_buckets": [
-    {
-      "binding": "R2_WALTER",
-      "bucket_name": "walter"
-    },
-    {
-      // Retains every deploy's SvelteKit immutable chunks/assets so clients
-      // with cached HTML referencing previous-deploy hashes can still
-      // resolve their assets. Synced additively from CI on every deploy.
-      "binding": "R2_IMMUTABLE",
-      "bucket_name": "trakt-web-immutable"
-    },
-    {
-      // Private bucket for user-submitted import issue reports (GDPR exports).
-      // Must NOT be public — contains personal viewing data.
-      "binding": "R2_IMPORT_REPORTS",
-      "bucket_name": "import-reports"
-    }
-  ]
+    "enabled": true
+  }
 }

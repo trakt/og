@@ -1,28 +1,33 @@
-import { OIDC_AUTH_COOKIE_NAME } from '$lib/features/auth/handle.ts';
-import type { OidcAuthToken } from '$lib/features/auth/models/OidcAuthToken.ts';
-import { IS_PROD } from '$lib/utils/env/index.ts';
-import { time } from '$lib/utils/timing/time.ts';
-import { json, type RequestHandler } from '@sveltejs/kit';
+import { AUTH_COOKIE } from '../../../lib/auth/authCookie.ts';
+import type { RequestHandler } from '@sveltejs/kit';
 
+type StoredToken = { token: string; expiresAt: number };
+
+function parseStoredToken(body: unknown, now: number): StoredToken | null {
+  if (typeof body !== 'object' || body === null) return null;
+  if (!('token' in body) || typeof body.token !== 'string' || body.token === '') return null;
+  if (!('expiresAt' in body) || typeof body.expiresAt !== 'number' || body.expiresAt <= now) return null;
+
+  return { token: body.token, expiresAt: body.expiresAt };
+}
+
+/**
+ * Sets the httpOnly cookie loaders read. The browser POSTs `{ token, expiresAt }` after login and every renewal.
+ * Anything else, including `{ token: null }` on logout, clears it. SvelteKit's CSRF check rejects cross-site form posts.
+ */
 export const POST: RequestHandler = async ({ request, cookies }) => {
-  // Client disconnected before the body finished streaming
-  // ("Network connection lost." in CF Workers). Nothing to persist.
-  const body: OidcAuthToken | null = await request.json().catch(() => null);
-  if (!body) {
-    return new Response(null, { status: 499 });
+  const stored = parseStoredToken(await request.json().catch(() => null), Date.now());
+
+  if (!stored) {
+    cookies.delete(AUTH_COOKIE, { path: '/' });
+    return new Response(null, { status: 204 });
   }
 
-  const { token, expiresAt } = body;
-  const maxAge = expiresAt ? time.years(1) / time.seconds(1) : 0;
-  const cookieContent = JSON.stringify({ token, expiresAt });
-
-  cookies.set(OIDC_AUTH_COOKIE_NAME, cookieContent, {
+  cookies.set(AUTH_COOKIE, stored.token, {
     path: '/',
     httpOnly: true,
-    secure: IS_PROD,
     sameSite: 'lax',
-    maxAge,
+    expires: new Date(stored.expiresAt),
   });
-
-  return json({ ok: true });
+  return new Response(null, { status: 204 });
 };

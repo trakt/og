@@ -1,5 +1,5 @@
 <script lang="ts">
-  import DataSettings from "$lib/sections/settings/DataSettings.svelte";
+import SyncsPage from '$lib/settings/syncs/SyncsPage.svelte';
+const { data } = $props();
 </script>
-
-<DataSettings />
+<SyncsPage {data} scope="import" />

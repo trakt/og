@@ -1,65 +1,33 @@
 <script lang="ts">
-  import { mapToToken } from "$lib/features/auth/mapToToken";
-  import { postToken } from "$lib/features/auth/postToken";
-  import { getUserManager } from "$lib/features/auth/stores/userManager";
-  import { FETCH_ERROR_EVENT } from "$lib/features/errors/constants";
-  import { error as printError } from "$lib/utils/console/print.ts";
-  import { setCacheBuster } from "$lib/utils/url/setCacheBuster";
-  import { UrlBuilder } from "$lib/utils/url/UrlBuilder";
-  import { claimSigninCallback } from "./_internal/claimSigninCallback.ts";
-  import type { User } from "oidc-client-ts";
-  import { onMount } from "svelte";
+import Container from '$lib/components/container/Container.svelte';
+import { returnPath } from '$lib/auth/returnPath';
+import { storeToken } from '$lib/auth/storeToken';
+import { userManager } from '$lib/auth/userManager';
+import { onMount } from 'svelte';
 
-  const storeSession = async (user: User | Nil) => {
-    if (!user) {
-      return;
-    }
+type ReturnState = { returnTo?: unknown } | undefined;
 
-    await postToken(mapToToken(user));
-  };
+onMount(async () => {
+  const user = await userManager().signinCallback().catch(() => undefined);
+  if (user) await storeToken(user).catch(() => {});
 
-  const navigateToHome = () => {
-    const homeUrl = new URL(
-      UrlBuilder.home(),
-      globalThis.window.location.origin,
-    );
-    globalThis.window.location.replace(setCacheBuster(homeUrl));
-  };
-
-  onMount(() => {
-    const manager = getUserManager();
-
-    if (!manager || !claimSigninCallback()) {
-      return;
-    }
-
-    manager
-      .signinCallback()
-      .then(storeSession)
-      .then(navigateToHome)
-      .catch((error) => {
-        printError("Error during sign-in callback:", error);
-
-        if (error instanceof Error && error.message.includes("429")) {
-          document.body.style.display = "block";
-          globalThis.window.dispatchEvent(
-            new CustomEvent(FETCH_ERROR_EVENT, {
-              detail: {
-                status: 429,
-                message: "Rate limited during sign-in",
-              },
-            }),
-          );
-          return;
-        }
-
-        navigateToHome();
-      });
-  });
+  // replace, not goto: the ?code= URL must not stay in history, and a full load renders the signed-in SSR.
+  location.replace(returnPath((user?.state as ReturnState)?.returnTo));
+});
 </script>
 
+<svelte:head>
+  <title>Signing in - Trakt</title>
+</svelte:head>
+
+<section>
+  <Container>
+    <p>Signing in…</p>
+  </Container>
+</section>
+
 <style>
-  :global(body) {
-    display: none;
-  }
+section {
+  padding-block: calc(var(--header-height) + var(--gutter)) var(--gutter);
+}
 </style>

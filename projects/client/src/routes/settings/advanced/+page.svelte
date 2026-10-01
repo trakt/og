@@ -1,5 +1,5 @@
 <script lang="ts">
-  import AdvancedSettings from "$lib/sections/settings/AdvancedSettings.svelte";
+import AdvancedPage from '$lib/settings/advanced/AdvancedPage.svelte';
+const { data } = $props();
 </script>
-
-<AdvancedSettings />
+<AdvancedPage {data} />

@@ -1,3 +1,4 @@
+// From trakt-web's projects/client/eslint.config.js. deno lint covers.ts; this adds.svelte.
 import js from '@eslint/js';
 import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
@@ -9,58 +10,29 @@ export default ts.config(
   ...svelte.configs['flat/recommended'],
   {
     languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-      },
+      globals: { ...globals.browser, ...globals.node },
     },
   },
   {
-    files: ['**/*.svelte'],
-
+    files: ['**/*.svelte', '**/*.svelte.ts'],
     languageOptions: {
-      parserOptions: {
-        parser: ts.parser,
-      },
+      parserOptions: { parser: ts.parser },
     },
   },
   {
-    ignores: ['build/', '.svelte-kit/', 'dist/', 'node_modules/'],
+    ignores: ['.svelte-kit/', '.wrangler/', 'node_modules/'],
   },
   {
-    'rules': {
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          'args': 'all',
-          'argsIgnorePattern': '^_',
-          'caughtErrors': 'all',
-          'caughtErrorsIgnorePattern': '^_',
-          'destructuredArrayIgnorePattern': '^_',
-          'varsIgnorePattern': '^_',
-          'ignoreRestSiblings': true,
-        },
-      ],
-    },
-  },
-  {
-    files: ['src/**'],
-    ignores: ['src/lib/utils/markdown/**'],
-
     rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          'paths': [
-            {
-              'name': 'marked',
-              'importNames': ['Marked', 'marked', 'parse', 'parseInline'],
-              'message':
-                'Raw marked output is not XSS safe. Use createSafeMarked from $lib/utils/markdown/createSafeMarked.ts instead.',
-            },
-          ],
-        },
-      ],
+      '@typescript-eslint/no-unused-vars': ['error', {
+        args: 'all',
+        argsIgnorePattern: '^_',
+        caughtErrors: 'all',
+        caughtErrorsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
+      }],
     },
   },
 );
