@@ -1,4 +1,0 @@
-[absorb]
-  maxStack=50
-  oneFixupPerCommit = true
-  autoStageIfNothingStaged = true

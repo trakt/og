@@ -1,144 +1,90 @@
+<!--
+  The framed poster at the top of a summary's sidebar : a 3px border and a soft
+  shadow, the placeholder when there's no image. Overlay badges come with the overlay work.
+-->
 <script lang="ts">
-  import CrossOriginImage from "$lib/features/image/components/CrossOriginImage.svelte";
-  import type { Snippet } from "svelte";
-  import { fade } from "svelte/transition";
-  import Link from "../link/Link.svelte";
+import { page } from '$app/state';
+import { formatDate } from '$lib/utils/formatDate';
+import RewatchingBadge from '$lib/components/media/RewatchingBadge.svelte';
+import DroppedBadge from '$lib/components/media/DroppedBadge.svelte';
+import CornerRating from '$lib/components/media/CornerRating.svelte';
+import { overlay } from '$lib/overlay/overlay';
+import type { ComponentProps } from 'svelte';
+import EpisodeTypeBadge from '$lib/components/media/EpisodeTypeBadge.svelte';
+import type { RatingTarget } from '$lib/components/rating/RatingTarget';
 
-  type SummaryPosterProps = {
-    src: string;
-    alt: string;
-    href?: string | Nil;
-    target?: "_blank" | "_self" | "_parent" | "_top";
-    hoverOverlay?: Snippet;
-    actions?: Snippet;
-    tags?: Snippet;
-    variant?: "portrait" | "landscape";
-  };
+interface Props {
+  /** Image URL. Left out, the placeholder shows. */
+  image?: string;
+  episodeBadge?: ComponentProps<typeof EpisodeTypeBadge>;
+  alt: string;
+  /** The first four list posters, in list order, form OG's quartered list cover. */
+  posters?: readonly { image?: string }[];
+  ratingTarget?: RatingTarget;
+  /** Episodes display their parent show's dropped and rewatching badges on the season poster. */
+  showTarget?: RatingTarget & { readonly type: 'show' };
+}
 
-  const {
-    src,
-    alt,
-    href,
-    actions,
-    hoverOverlay,
-    target = "_blank",
-    tags,
-    variant = "portrait",
-  }: SummaryPosterProps = $props();
-
-  const activeOverlay = $derived(href && hoverOverlay);
+const { image, alt, posters, ratingTarget, showTarget, episodeBadge }: Props = $props();
+const badgeTarget = $derived(showTarget ?? ratingTarget);
+const state = $derived(badgeTarget ? overlay.state(badgeTarget.type, badgeTarget.id) : undefined);
 </script>
 
-<div class="trakt-summary-poster-container" data-variant={variant}>
-  <div class="trakt-summary-poster" class:has-active-overlay={activeOverlay}>
-    <Link {href} {target}>
-      <CrossOriginImage {src} {alt} />
-    </Link>
-  </div>
-
-  {#if activeOverlay}
-    <div class="trakt-summary-poster-overlay">
-      {@render activeOverlay()}
+<div class={['summary-poster', { dropped: state?.dropped }]}>
+  {#if image}
+    <img src={image} {alt} />
+  {:else}
+    <span class="placeholder" role="img" aria-label={alt}></span>
+  {/if}
+  {#if episodeBadge}<EpisodeTypeBadge {...episodeBadge} />{/if}
+  {#if posters}
+    <div class="collage" aria-hidden="true">
+      {#each posters.slice(0, 4) as poster, i (i)}
+        {#if poster.image}<img src={poster.image} alt="" />{:else}<span class="placeholder"></span>{/if}
+      {/each}
     </div>
   {/if}
-
-  {@render actions?.()}
-
-  {#if tags}
-    <div class="trakt-summary-poster-tags" transition:fade={{ duration: 150 }}>
-      {@render tags()}
-    </div>
+  {#if state?.rewatching}<RewatchingBadge date={state.rewatchingAt ? formatDate(state.rewatchingAt, page.data.datePreferences) : undefined} />{/if}
+  {#if state?.dropped && badgeTarget?.type === 'show'}<DroppedBadge target={{ ...badgeTarget, type: 'show' }} date={state.droppedAt ? formatDate(state.droppedAt, page.data.datePreferences) : undefined} />{/if}
+  {#if ratingTarget}
+    {@const rating = overlay.state(ratingTarget.type, ratingTarget.id).rating}
+    {#if rating}<CornerRating {rating} />{/if}
   {/if}
 </div>
 
 <style>
-  .trakt-summary-poster-container {
-    --overlay-border-size: var(--ni-2);
-    --poster-aspect-ratio: 2 / 3;
+.summary-poster {
+  position: relative;
+  border: 3px solid var(--color-summary-poster-border);
+  background-color: var(--color-card-bg);
+  box-shadow: var(--shadow-summary-poster);
 
-    width: var(--summary-poster-width);
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap-m);
-    position: relative;
-
-    &[data-variant="landscape"] {
-      .trakt-summary-poster :global(img),
-      .trakt-summary-poster-overlay {
-        --poster-aspect-ratio: 16 / 9;
-      }
-    }
+  &.dropped img {
+    filter: grayscale(1);
   }
-
-  .trakt-summary-poster :global(img),
-  .trakt-summary-poster-overlay {
-    overflow: hidden;
-    border-radius: var(--border-radius-xxl);
+  & :is(img, .placeholder) {
+    display: block;
+    inline-size: 100%;
+    aspect-ratio: var(--ratio-poster);
+    object-fit: cover;
   }
-
-  .trakt-summary-poster {
-    position: relative;
-
-    :global(img) {
-      display: block;
-
-      width: var(--summary-poster-width);
-      aspect-ratio: var(--poster-aspect-ratio);
-
-      object-fit: cover;
-
-      align-self: stretch;
-
-      box-shadow: var(--shadow-raised);
-      box-sizing: border-box;
-
-      transition: var(--transition-increment) ease-in-out;
-      transition-property: filter, border, opacity;
-    }
+}
+.collage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  overflow: hidden;
+  & :is(img, .placeholder) {
+    inline-size: 100%;
+    block-size: 100%;
+    aspect-ratio: auto;
+    object-fit: cover;
   }
-
-  .trakt-summary-poster-overlay {
-    position: absolute;
-    z-index: var(--layer-raised);
-
-    --border-size: calc(2 * var(--overlay-border-size));
-    inset: 0;
-    margin: auto;
-    width: calc(100% - var(--border-size));
-    height: calc(100% - var(--border-size));
-
-    opacity: 0;
-    transition: opacity var(--transition-increment) ease-in-out;
-
-    pointer-events: none;
-
-    box-sizing: border-box;
-    border: var(--overlay-border-size) solid var(--color-overlay-foreground);
-  }
-
-  .has-active-overlay:hover {
-    :global(img) {
-      filter: saturate(30%);
-      border: var(--overlay-border-size) solid transparent;
-    }
-
-    + .trakt-summary-poster-overlay {
-      opacity: 1;
-    }
-  }
-
-  .trakt-summary-poster-tags {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--gap-xs);
-
-    position: absolute;
-    z-index: var(--layer-raised);
-
-    bottom: 0;
-    inset-inline: 0;
-
-    transform: translateY(50%);
-  }
+}
+.placeholder {
+  background-image: var(--image-placeholder-poster);
+  background-size: cover;
+}
 </style>

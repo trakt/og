@@ -1,0 +1,51 @@
+name: Scrobble aka CI
+
+# Checks run locally by default; this workflow is manual.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Totally Ninja aka CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/client
+    # One deploy at a time; a newer push to main waits rather than racing an older one.
+    concurrency:
+      group: ${{ github.event_name == 'push' && 'deploy-main' || github.run_id }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-deno
+      - run: bash scripts/leak-check.sh
+      - run: deno task ci
+      - name: Now Playing aka Deploy to og.trakt.tv
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: deno run -A npm:wrangler deploy --message "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  commits:
+    name: Check-in History aka Commits
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/client
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # commitlint reads the PR's commit range
+      - uses: ./.github/actions/setup-deno
+      - name: Checking In aka Commitlint
+        run: deno run -A npm:@commitlint/cli --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
+      - name: No Weak Sauce aka Forbid Fixup Commits
+        run: |
+          if git log --format=%s ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | grep -E '^(fixup|squash|amend)! '; then
+            echo "::error::Fold fixup commits in before merging (see AGENTS.md)."
+            exit 1
+          fi

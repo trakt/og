@@ -1,24 +1,20 @@
-name: Setup Deno Environment
-description: Prepares a Deno development environment with caching and dependencies
+# From trakt-web. Deno + frozen install. Callers check out first (needed to find this action).
+name: Set Up the Couch aka Setup Deno
+description: Prepares a Deno environment with dependencies installed from the lockfile
 
 inputs:
   deno-version:
-    description: 'Deno version to install'
+    description: Deno version to install
     required: false
-    default: 'v2.9.4'
+    default: v2.x
 
 runs:
   using: composite
   steps:
-    - name: Secure the Evidence aka Checkout Code
-      id: checkout
-      uses: actions/checkout@v5
-
-    - name: Summon the Digital Oracle aka Install Deno
-      uses: denoland/setup-deno@v2
+    - uses: denoland/setup-deno@v2
       with:
         deno-version: ${{ inputs.deno-version }}
-
-    - name: Gather the Tools aka Install Dependencies
-      shell: bash
-      run: 'deno task install'
+    - shell: bash
+      run: deno task install
+      working-directory: .
+      working-directory: .

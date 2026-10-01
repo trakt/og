@@ -1,23 +1,29 @@
-# Always-loaded core (small, project-wide)
+# og
 
-@.agents/rules/project.md
+og is a visual clone of the classic Trakt site, built with SvelteKit and Deno on the trakt-web fork layout.
+The app lives in `projects/client/`. Shared code and design rules live in `.agents/rules/`.
 
-@.agents/rules/code-principles.md
+## Commands
 
-@.agents/rules/implementation.md
+Run these from the repository root:
 
-@.agents/rules/testing.md
+- `deno task install`: install pinned dependencies from the lockfile.
+- `deno task client:dev`: start the dev server.
+- `deno task client:ci`: formatting, lint, types, tests and production build.
+- `deno task client:check`: type checks.
+- `deno task client:test`: tests.
+- `deno task client:build`: production build.
+- `deno task client:verify [pr]`: CI, supply chain, commit and leak checks.
+- `deno task client:land <pr> --issue <N>`: land a verified PR.
+- `deno task client:deploy`: human-run deployment.
 
-# Domain rules - load on demand
+## Hard rules
 
-Domain-specific rules are NOT auto-imported to keep baseline context small.
-Read them when the work touches the matching area. CLAUDE.md routes the
-mapping; the rule files live at `.agents/rules/`:
+- Never push to main. PRs land only via `deno task client:land <pr> --issue <N>`.
+- Use the latest stable dependencies, pinned to exact versions. Review and validate upgrades.
+- Desktop first. Match the classic layout at 1440px; smaller screens must be usable.
+- Clone the UI, not the code. Rebuild with this app's components and CSS.
+- Follow `.agents/rules/design-system.md` and the matching rules in `.agents/rules/` before changing code.
+- Agents never deploy; a human runs the deployment task.
 
-- `components.md` - UI surface (lib/components, lib/features, lib/sections, lib/guards)
-- `requests.md` - API requests, queries, mutations, mappers (lib/requests)
-- `utils.md` - shared utilities (lib/utils)
-- `performance.md` - perf work: animations, scroll handlers, IntersectionObservers, rxjs plumbing, bundle/boot, viewport gating
-
-Read with the Read tool when the task enters the domain. Re-read after long
-gaps if context was compacted.
+Planning docs and the issue board are private; agents are given access separately.

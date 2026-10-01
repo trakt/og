@@ -1,9 +1,0 @@
-.trakt-list-item-container,
-.section-list-empty-state {
-  padding: 0 var(--layout-distance-side);
-}
-
-.section-list-empty-state:has(.trakt-skeleton-list) {
-  padding-inline-end: 0;
-  padding-inline-start: 0;
-}

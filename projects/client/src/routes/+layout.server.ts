@@ -1,43 +1,41 @@
-import { hasAuthSession } from '$lib/features/auth/hasAuthSession.ts';
-import { isAuthorizedToken } from '$lib/features/auth/isAuthorizedToken.ts';
-import type { OidcAuthToken } from '$lib/features/auth/models/OidcAuthToken.ts';
-import { getDeviceType } from '$lib/utils/devices/getDeviceType.ts';
-import { isBotAgent } from '$lib/utils/devices/isBotAgent.ts';
-import type { LayoutServerLoad } from '$types/$types.d.ts';
+import { api } from '../lib/api/api.ts';
+import { toHeaderUser } from '../lib/components/header/toHeaderUser.ts';
+import { toDarkKnight } from '../lib/settings/toDarkKnight.ts';
+import { toDatePreferences } from '../lib/settings/toDatePreferences.ts';
+import { toTheme } from '../lib/settings/toTheme.ts';
+import type { ViewerSettings } from '../lib/settings/ViewerSettings.ts';
 
-const getAuth = (auth: Nil | OidcAuthToken) => {
-  // Presence and validity are separate: routing keys off the former, but a
-  // cookie whose token has lapsed must not seed the client with a dead token.
-  const hasSession = hasAuthSession(auth);
+/**
+ * Pages inherit settings and datePreferences from this layout; server loaders can read them through parent().
+ * The header uses the same response. Any failure renders logged-out; only the client renews the token.
+ * It also sets `locals.theme`, the viewer's Dark Knight setting, which hooks.server.ts writes onto `<html>` so the
+ * first paint is already in the right theme. Logged out stays light, as OG did.
+ */
+export async function load({ fetch, locals, cookies }) {
+  const hasSession = locals.token !== null;
+  // The header search's type picker.
+  const searchType = cookies.get('search_type') ?? '';
+  const loggedOut = { hasSession, user: null, settings: null, datePreferences: toDatePreferences(null), searchType };
+  if (!hasSession) return loggedOut;
 
-  if (!isAuthorizedToken(auth)) {
-    return {
-      token: null,
-      expiresAt: null,
-      isAuthorized: false,
+  try {
+    const response = await api({ fetch, token: locals.token }).users.settings({
+      // @trakt/api 0.6.0 only types browsing, but API also supports sharing.
+      query: { extended: 'browsing,sharing' as 'browsing' },
+    });
+    if (response.status !== 200) return loggedOut;
+
+    const settings: ViewerSettings = response.body;
+    const data = {
       hasSession,
+      user: toHeaderUser(settings.user),
+      settings,
+      datePreferences: toDatePreferences(settings),
+      searchType,
     };
+    locals.theme = toTheme(toDarkKnight(settings));
+    return data;
+  } catch {
+    return loggedOut;
   }
-
-  return {
-    token: auth.token,
-    expiresAt: auth.expiresAt,
-    isAuthorized: true,
-    hasSession,
-  };
-};
-
-export const load: LayoutServerLoad = (
-  { request, locals },
-) => {
-  const defaultResponse = {
-    theme: locals.theme,
-    oidcAuth: getAuth(locals.oidcAuth),
-    isLegitimateBot: locals.isLegitimateBot,
-    isBot: isBotAgent(request.headers.get('user-agent')),
-    device: getDeviceType(request.headers.get('user-agent')),
-    typesense: locals.typesense,
-  };
-
-  return defaultResponse;
-};
+}

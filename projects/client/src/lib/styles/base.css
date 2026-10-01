@@ -1,0 +1,208 @@
+/*
+ * Base element styles: the parts of Bootstrap 3 (normalize + scaffolding + type + forms) that OG
+ * never overrode, plus OG's own heading rules. Elements only, no classes.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-page);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+section {
+  background-color: var(--color-surface);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: var(--line-height-computed) 0 0;
+  font-family: var(--font-headings);
+  font-weight: var(--font-weight-headings-light);
+  line-height: var(--line-height-headings);
+  color: inherit;
+
+  & :is(b, strong) {
+    font-weight: var(--font-weight-headings);
+  }
+}
+
+h1 {
+  margin-block-end: calc(var(--line-height-computed) / 2);
+  font-weight: var(--font-weight-headings);
+  font-size: var(--font-size-h1);
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+}
+
+h3 {
+  font-size: var(--font-size-h3);
+}
+
+h4 {
+  font-size: var(--font-size-h4);
+}
+
+h5 {
+  font-size: var(--font-size-h5);
+}
+
+h6 {
+  font-size: var(--font-size-h6);
+}
+
+p {
+  margin: 0 0 calc(var(--line-height-computed) / 2);
+}
+
+b,
+strong {
+  font-family: var(--font-headings);
+  font-weight: var(--font-weight-headings-heavy);
+}
+
+small {
+  font-size: 85%;
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: none;
+
+  &:is(:hover, :focus) {
+    color: var(--color-link-hover);
+    text-decoration: underline;
+  }
+}
+
+hr {
+  box-sizing: content-box;
+  block-size: 0;
+  margin-block: var(--line-height-computed);
+  border: 0;
+  border-block-start: 1px solid var(--color-separator);
+}
+
+img {
+  vertical-align: middle;
+  border: 0;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+th,
+td {
+  padding: 0;
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--font-mono);
+}
+
+code {
+  padding: 2px 4px;
+  font-size: 90%;
+  color: var(--color-code-text);
+  background-color: var(--color-code-bg);
+  border: 1px solid var(--color-code-border);
+  border-radius: var(--radius-code);
+}
+
+/* Form controls: Bootstrap's .form-control and .btn values, applied to the elements. */
+button,
+input,
+select,
+textarea {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
+input:not([type='checkbox'], [type='radio'], [type='range'], [type='color']),
+select,
+textarea {
+  min-block-size: var(--control-height);
+  padding: var(--space-base-block) var(--space-base-inline);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-base);
+  background-color: var(--color-input-bg);
+  color: var(--color-input-text);
+  box-shadow: var(--shadow-input);
+  transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+
+  &:focus {
+    border-color: var(--color-input-border-focus);
+    outline: 0;
+    box-shadow: var(--shadow-input-focus);
+  }
+
+  &:disabled {
+    background-color: var(--color-input-bg-disabled);
+    cursor: not-allowed;
+  }
+
+  &::placeholder {
+    color: var(--color-input-placeholder);
+    opacity: 1;
+  }
+}
+
+button {
+  min-block-size: var(--control-height);
+  padding: var(--space-base-block) var(--space-base-inline);
+  border: 1px solid var(--color-btn-default-border);
+  border-radius: var(--radius-base);
+  background-color: var(--color-btn-default-bg);
+  color: var(--color-btn-default-text);
+  line-height: var(--line-height-base);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+/* Visible focus for keyboard users everywhere (OG had none). */
+:focus-visible {
+  outline: 2px solid var(--color-input-border-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

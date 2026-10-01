@@ -1,281 +1,77 @@
 <script lang="ts">
-  import "../style";
+import '$lib/styles/tokens.css';
+import '$lib/styles/base.css';
+import { invalidateAll } from '$app/navigation';
+import { page } from '$app/state';
+import { syncSession } from '$lib/auth/syncSession';
+import { userManager } from '$lib/auth/userManager';
+import CheckinDialog from '$lib/components/checkin/CheckinDialog.svelte';
+import { startCommentReactions } from '$lib/components/comments/startCommentReactions';
+import Footer from '$lib/components/footer/Footer.svelte';
+import Header from '$lib/components/header/Header.svelte';
+import Toaster from '$lib/components/toast/Toaster.svelte';
+import { startOverlay } from '$lib/overlay/startOverlay';
+import { toDarkKnight } from '$lib/settings/toDarkKnight';
+import { toTheme } from '$lib/settings/toTheme';
+import { onMount } from 'svelte';
 
-  import { page } from "$app/state";
-  import CoverImage from "$lib/components/background/CoverImage.svelte";
-  import CoverProvider from "$lib/components/background/CoverProvider.svelte";
-  import ListScrollHistoryProvider from "$lib/components/lists/section-list/ListScrollHistoryProvider.svelte";
-  import ActionToastHost from "$lib/features/action-toast/ActionToastHost.svelte";
-  import AnalyticsProvider from "$lib/features/analytics/AnalyticsProvider.svelte";
-  import PageView from "$lib/features/analytics/PageView.svelte";
-  import AuthProvider from "$lib/features/auth/components/AuthProvider.svelte";
-  import LoginErrorSnackbar from "$lib/features/auth/components/LoginErrorSnackbar.svelte";
-  import { markAppReady } from "$lib/features/boot-loader/markAppReady.ts";
-  import BotProvider from "$lib/features/bot-verification/BotProvider.svelte";
-  import ConfirmationProvider from "$lib/features/confirmation/ConfirmationProvider.svelte";
-  import { DeploymentEndpoint } from "$lib/features/deployment/DeploymentEndpoint.js";
-  import DevtoolsProvider from "$lib/features/devtools/DevtoolsProvider.svelte";
-  import EditModeProvider from "$lib/features/edit-mode/EditModeProvider.svelte";
-  import EmailUnsubscribeSnackbar from "$lib/features/email-unsubscribe/EmailUnsubscribeSnackbar.svelte";
-  import ErrorProvider from "$lib/features/errors/ErrorProvider.svelte";
-  import FeatureFlagProvider from "$lib/features/feature-flag/FeatureFlagProvider.svelte";
-  import FilterProvider from "$lib/features/filters/FilterProvider.svelte";
-  import LocaleProvider from "$lib/features/i18n/components/LocaleProvider.svelte";
-  import LocaleSettingSync from "$lib/features/i18n/components/LocaleSettingSync.svelte";
-  import NavigationHistoryProvider from "$lib/features/navigation-history/NavigationHistoryProvider.svelte";
-  import NavigationProvider from "$lib/features/navigation/NavigationProvider.svelte";
-  import AddNoteDrawerProvider from "$lib/features/notes/AddNoteDrawerProvider.svelte";
-  import OfflineSync from "$lib/features/offline/OfflineSync.svelte";
-  import GlobalParameterEscaper from "$lib/features/parameters/GlobalParameterEscaper.svelte";
-  import GlobalParameterProvider from "$lib/features/parameters/GlobalParameterProvider.svelte";
-  import PlayerProvider from "$lib/features/player/YoutubePlayerProvider.svelte";
-  import QueryClientProvider from "$lib/features/query/QueryClientProvider.svelte";
-  import QueryDevtools from "$lib/features/query/QueryDevtools.svelte";
-  import RedirectProvider from "$lib/features/redirect/RedirectProvider.svelte";
-  import ReportDialogProvider from "$lib/features/report/ReportDialogProvider.svelte";
-  import SearchProvider from "$lib/features/search/SearchProvider.svelte";
-  import SpotlightProvider from "$lib/features/spotlight/SpotlightProvider.svelte";
-  import SeasonalFlair from "$lib/features/theme/components/SeasonalFlair.svelte";
-  import ThemeProvider from "$lib/features/theme/components/ThemeProvider.svelte";
-  import { initializeSeasonalThemes } from "$lib/features/theme/initializeSeasonalThemes.js";
-  import ToastProvider from "$lib/features/toast/ToastProvider.svelte";
-  import RenderFor from "$lib/guards/RenderFor.svelte";
-  import ManageListsDrawerProvider from "$lib/sections/components/lists-drawer/ManageListsDrawerProvider.svelte";
-  import MarkAsWatchedDrawerProvider from "$lib/sections/media-actions/mark-as-watched/MarkAsWatchedDrawerProvider.svelte";
-  import MediaGlanceProvider from "$lib/sections/summary/components/glance/MediaGlanceProvider.svelte";
-  import MobileNavbar from "$lib/sections/navbar/MobileNavbar.svelte";
-  import SideNavbar from "$lib/sections/navbar/SideNavbar.svelte";
-  import TopNavbar from "$lib/sections/navbar/TopNavbar.svelte";
-  import NavbarToastContent from "$lib/sections/toast/NavbarToastContent.svelte";
-  import { isCrawler } from "$lib/utils/devices/isCrawler.ts";
-  import { isPWA } from "$lib/utils/devices/isPWA.ts";
-  import { retry } from "$lib/utils/retry/retry.js";
-  import { WorkerMessage } from "$worker/WorkerMessage";
-  import { workerRequest } from "$worker/workerRequest";
-  import { onMount } from "svelte";
+let { children, data } = $props();
 
-  const { data, children } = $props();
+// The coming-soon placeholder at `/` and the design-system demos draw their own page.
+const bare = $derived(page.route.id === '/' || page.route.id?.startsWith('/_design'));
 
-  const isDev = import.meta.env.DEV;
+// The server renders the saved theme onto <html> (hooks.server.ts); this keeps it in step when the settings reload.
+// The demos pick their own theme.
+const darkKnight = $derived(toDarkKnight(data.settings));
+const theme = $derived(toTheme(darkKnight));
+$effect(() => {
+  if (!bare) document.documentElement.dataset.theme = theme;
+});
 
-  $effect.pre(initializeSeasonalThemes);
+onMount(() => {
+  const manager = userManager();
+  const stopSession = syncSession({ manager, hasSession: data.hasSession, reload: invalidateAll });
+  const stopOverlay = startOverlay(manager);
+  const stopReactions = startCommentReactions(manager);
 
-  onMount(async () => {
-    markAppReady();
-
-    if (isPWA()) {
-      document.body.classList.add("trakt-pwa");
-    }
-
-    const activeSha = TRAKT_GIT_SHA;
-    const deployedSha = await retry(() => fetch(DeploymentEndpoint.Get)).then(
-      (res) => res.text(),
-    );
-
-    if (activeSha === deployedSha) {
-      return;
-    }
-
-    await workerRequest(WorkerMessage.CacheBust);
-  });
+  return () => {
+    stopSession();
+    stopOverlay();
+    stopReactions();
+  };
+});
 </script>
 
-<svelte:head>
-  <title>Trakt Web</title>
-</svelte:head>
+{#if bare}
+  {@render children()}
+{:else}
+  <a class="skip" href="#content">Skip to content</a>
+  <Header user={data.user} searchType={data.searchType} {darkKnight} />
+  <main id="content" tabindex="-1">
+    {@render children()}
+  </main>
+  <Footer username={data.user?.slug ?? null} />
+{/if}
+<Toaster />
+<CheckinDialog />
 
-<ErrorProvider>
-  <QueryClientProvider client={data.queryClient}>
-    <GlobalParameterProvider>
-      <GlobalParameterEscaper enabled={isCrawler()}>
-        <BotProvider isLegitimateBot={data.isLegitimateBot}>
-          <AuthProvider
-            isAuthorized={data.oidcAuth.isAuthorized}
-            accessToken={data.oidcAuth.token}
-            hasServerSession={data.oidcAuth.hasSession}
-          >
-            <FeatureFlagProvider>
-              <PlayerProvider>
-                <AnalyticsProvider>
-                  <RedirectProvider>
-                    <NavigationProvider>
-                      <NavigationHistoryProvider>
-                        <LocaleProvider>
-                          <LocaleSettingSync />
-                          <SearchProvider config={data.typesense}>
-                            <FilterProvider>
-                              <CoverProvider>
-                                <ToastProvider>
-                                  <ConfirmationProvider>
-                                    <MarkAsWatchedDrawerProvider />
-                                    <ManageListsDrawerProvider />
-                                    <ActionToastHost />
-                                    <AddNoteDrawerProvider />
-                                    <ReportDialogProvider />
-                                    <MediaGlanceProvider />
-                                    <CoverImage />
-                                    <SeasonalFlair />
-                                    <EditModeProvider>
-                                      <ThemeProvider theme={data.theme}>
-                                        <ListScrollHistoryProvider>
-                                          <SpotlightProvider>
-                                            <!--
-                                          All navbars are added in the layout to make sure they can
-                                          persist during navigation. The state is set on a page level.
-                                        -->
-                                            <RenderFor
-                                              audience="all"
-                                              device={["mobile", "tablet-sm"]}
-                                            >
-                                              <TopNavbar />
-                                            </RenderFor>
+<style>
+/* Off-screen until focused, then over the fixed header's logo. */
+.skip {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  z-index: calc(var(--z-header) + 1);
+  padding: var(--space-lg-block) var(--space-lg-inline);
+  background: var(--color-surface);
+  translate: 0 -100%;
 
-                                            <RenderFor
-                                              audience="all"
-                                              device={["desktop", "tablet-lg"]}
-                                            >
-                                              <SideNavbar />
-                                            </RenderFor>
-
-                                            {@render children()}
-
-                                            <RenderFor
-                                              audience="all"
-                                              device={["mobile", "tablet-sm"]}
-                                            >
-                                              <MobileNavbar />
-                                            </RenderFor>
-
-                                            <RenderFor audience="authenticated">
-                                              <NavbarToastContent />
-                                            </RenderFor>
-
-                                            <RenderFor audience="authenticated">
-                                              <OfflineSync />
-                                            </RenderFor>
-
-                                            <LoginErrorSnackbar />
-                                            <EmailUnsubscribeSnackbar />
-                                            {#if isDev}
-                                              <RenderFor
-                                                audience="all"
-                                                device={["desktop", "tablet-lg"]}
-                                              >
-                                                <DevtoolsProvider />
-                                              </RenderFor>
-
-                                              <RenderFor
-                                                audience="all"
-                                                device={["mobile", "tablet-sm"]}
-                                              >
-                                                <QueryDevtools
-                                                  client={data.queryClient}
-                                                  buttonPosition="bottom-right"
-                                                />
-                                              </RenderFor>
-                                            {/if}
-                                          </SpotlightProvider>
-                                        </ListScrollHistoryProvider>
-                                      </ThemeProvider>
-                                    </EditModeProvider>
-                                  </ConfirmationProvider>
-                                </ToastProvider>
-                              </CoverProvider>
-                            </FilterProvider>
-                          </SearchProvider>
-                        </LocaleProvider>
-                      </NavigationHistoryProvider>
-                    </NavigationProvider>
-
-                    <!-- Keyed on the pathname, not `route.id`: two pages sharing
-                         a template are still distinct page views. -->
-                    {#key page.url.pathname}
-                      <PageView />
-                    {/key}
-                  </RedirectProvider>
-                </AnalyticsProvider>
-              </PlayerProvider>
-            </FeatureFlagProvider>
-          </AuthProvider>
-        </BotProvider>
-      </GlobalParameterEscaper>
-    </GlobalParameterProvider>
-  </QueryClientProvider>
-</ErrorProvider>
-
-<style lang="scss">
-  @use "$style/scss/mixins/index" as *;
-
-  :global(.tsqd-open-btn-container) {
-    opacity: 0.25;
+  &:focus {
+    translate: none;
   }
+}
 
-  // Dev-only TanStack toggle defaults to the physical bottom-right. Under RTL
-  // the side navbar (and its avatar) dock to the right, so relocate the toggle
-  // to the opposite bottom corner to avoid overlapping them. !important beats
-  // the library's inline positioning.
-  :global(.tsqd-open-btn-container:dir(rtl)) {
-    inset-inline-end: auto !important;
-    inset-inline-start: var(--ni-16) !important;
-  }
-
-  @include for-mouse {
-    :global(::-webkit-scrollbar) {
-      width: var(--ni-8);
-      height: var(--ni-8);
-    }
-
-    :global(body),
-    :global(html) {
-      &::-webkit-scrollbar-thumb {
-        background-color: var(--cm-color-foreground-30);
-      }
-    }
-
-    :global(::-webkit-scrollbar-thumb) {
-      background-color: transparent;
-      border-radius: var(--border-radius-xs);
-      opacity: 0;
-
-      backdrop-filter: blur(var(--ni-4));
-    }
-
-    :global(:hover::-webkit-scrollbar-thumb) {
-      background-color: var(--cm-color-foreground-50);
-    }
-
-    :global(::-webkit-scrollbar-thumb:hover) {
-      background-color: var(--color-foreground);
-    }
-  }
-
-  @mixin pwa-navbar-shadow($position) {
-    content: "";
-    z-index: var(--layer-floating);
-    pointer-events: none;
-
-    position: $position;
-    top: 0;
-
-    width: 100%;
-    height: var(--ni-48);
-
-    background: linear-gradient(
-      180deg,
-      var(--color-background-navbar-base) 0%,
-      var(--color-background-navbar-base) 10%,
-      transparent 100%
-    );
-  }
-
-  :global([data-mobile-os="android"] body.trakt-pwa) {
-    &::after {
-      @include pwa-navbar-shadow(fixed);
-    }
-  }
-
-  :global([data-mobile-os="ios"]:has(body.trakt-pwa)),
-  :global([data-mobile-os="ios"] body.trakt-pwa) {
-    overscroll-behavior-y: none;
-  }
+main:focus {
+  outline: none;
+}
 </style>
