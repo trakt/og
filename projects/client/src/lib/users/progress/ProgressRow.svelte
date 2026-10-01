@@ -1,14 +1,13 @@
 <!--
   One show on the progress page: the poster, then the title, the tick bar and what's been watched (or collected),
-  then the seasons to open under it. Opening the seasons reads the show's catalog once (`onexpand`), and the expanded
-  row adds the next episode's fanart card on the right and the last episode's title. On your own profile the title
+  then the seasons to open under it. Opening the seasons reads the show's catalog once (`onexpand`) and opens the
+  panel under the row: the up-next banner and the season strips (`ProgressPanel`). The panel sits in its own grid row,
+  so opening it moves nothing above it. On your own profile the title
   has rewatch and drop (or hide, on Library) icons; the row recomputes from the overlay as they save, so a drop or a
   hide takes it off the page and a rewatch resets it. A dropped show (the Dropped tab) says when you dropped it and
   has no drop icon.
 -->
 <script lang="ts">
-import FanartCard from '$lib/components/media/FanartCard.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
 import { removeCard } from '$lib/components/media/removeCard';
 import RewatchingBadge from '$lib/components/media/RewatchingBadge.svelte';
 import TickBar from '$lib/components/media/TickBar.svelte';
@@ -18,25 +17,23 @@ import lightBan from '$lib/icons/light/ban.svg?raw';
 import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
 import regularCircleMinus from '$lib/icons/regular/circle-minus.svg?raw';
 import solidBackward from '$lib/icons/solid/backward.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
 import type { ProgressType } from './progressTypes.ts';
+import ProgressPanel from './ProgressPanel.svelte';
 import ProgressSeasons from './ProgressSeasons.svelte';
-import type { ProgressNext, ProgressRow } from './toProgressRow.ts';
+import type { ProgressRow } from './toProgressRow.ts';
 
 interface Props {
   row: ProgressRow;
   type: ProgressType;
   simple: boolean;
-  datePreferences: DatePreferences;
   /** The row opened: read the show's catalog. */
   onexpand?: () => void;
   /** The catalog read is in flight. */
   expanding?: boolean;
 }
 
-const { row, type, simple, datePreferences, onexpand, expanding = false }: Props = $props();
+const { row, type, simple, onexpand, expanding = false }: Props = $props();
 const kind = $derived(type === 'library' ? 'library' : 'watched');
 
 let open = $state(false);
@@ -45,7 +42,6 @@ let article = $state<HTMLElement>();
 let removedByAction = false;
 
 const showTarget = $derived({ type: 'show' as const, id: row.id, title: row.title });
-const next = $derived(open ? row.next : undefined);
 const plural = (n: number, word: string) => `${word}${n === 1 ? '' : 's'}`;
 const count = (n: number) => n.toLocaleString('en-US');
 
@@ -77,8 +73,7 @@ function toggle(opened: boolean) {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 {#snippet last(episode: NonNullable<ProgressRow['last']>)}
-  {#if episode.href}<a class="last-episode"
-  href={episode.href}>{episode.title ? `${episode.number} ${episode.title}` : episode.number}</a>{/if}{episode.relative ? ` ${episode.relative}` : ''} on {episode.date}.
+  {episode.relative ? `${episode.relative} ` : ''}on {episode.date}.
 {/snippet}
 
 {#snippet action(visibility: 'rewatch' | 'drop' | 'hide', svg: string)}
@@ -92,32 +87,6 @@ function toggle(opened: boolean) {
 </span>
 {/snippet}
 
-{#snippet nextCard(next: ProgressNext)}
-  <div class="next">
-  <FanartCard
-    href={next.href}
-    title={next.title}
-    year={next.year}
-    number={next.number}
-    image={next.image}
-    tags={next.tags}
-    userRating={overlay.state(next.target.type, next.target.id).rating}
-    icons={{
-        fill: quickIconFill({
-          state: overlay.state(next.target.type, next.target.id),
-          airedEpisodes: next.airedEpisodes,
-          datePreferences,
-        }),
-        rating: next.rating,
-        ratingTarget: next.target,
-        watchTarget: { ...next.target, airedEpisodes: next.airedEpisodes, season: next.season },
-        listTarget: next.target,
-        watchNow: 'play',
-        listLabel: next.target.type === 'episode' ? 'Add to list' : 'Add to watchlist',
-      }}
-  />
-</div>
-{/snippet}
 
 <article bind:this={article} class="progress-row" aria-labelledby="progress-{row.id}"
   out:removeCard|global={() => removedByAction}>
@@ -170,13 +139,15 @@ function toggle(opened: boolean) {
       {/if}
     </p>
 
-    <ProgressSeasons id={row.id} title={row.title} seasons={row.seasons} type={kind} {simple} bind:open
-      loading={expanding} ontoggle={toggle} />
+    <ProgressSeasons controls="progress-panel-{row.id}" bind:open loading={expanding} ontoggle={toggle} />
   </div>
 
-  {#if next}
-    {@render nextCard(next)}
-  {/if}
+  <div class="panel" id="progress-panel-{row.id}" hidden={!open}>
+    {#if open && row.strips}
+      <ProgressPanel strips={row.strips} upNext={row.upNext} last={row.last} watchedTime={row.watchedTime}
+        leftTime={row.leftTime} {type} />
+    {/if}
+  </div>
 </article>
 
 <style>
@@ -195,6 +166,7 @@ function toggle(opened: boolean) {
 .poster {
   position: relative;
   display: block;
+  grid-row: span 2;
 
   & :is(img, .placeholder) {
     display: block;
@@ -311,7 +283,9 @@ function toggle(opened: boolean) {
   margin-inline-end: var(--progress-dropped-icon-gap);
 }
 
-.next {
+/* Its own row under the text, out to the card column, so opening it moves nothing above. */
+.panel {
+  grid-column: 2 / -1;
   min-inline-size: 0;
 }
 
@@ -329,6 +303,10 @@ function toggle(opened: boolean) {
 
   .poster {
     display: none;
+  }
+
+  .panel {
+    grid-column: 1 / -1;
   }
 }
 

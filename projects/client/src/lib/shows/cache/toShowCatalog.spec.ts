@@ -34,7 +34,13 @@ describe('toShowCatalog', () => {
       body: [{
         number: 1,
         title: 'Season 1',
-        episodes: [episode(1, 1, { episode_type: 'series_premiere', images: { screenshot: ['s.jpg'] } })],
+        episodes: [
+          episode(1, 1, {
+            episode_type: 'series_premiere',
+            overview: 'Walt cooks.',
+            images: { screenshot: ['s.jpg'] },
+          }),
+        ],
       }],
     });
 
@@ -44,6 +50,7 @@ describe('toShowCatalog', () => {
       number: 1,
       numberAbs: undefined,
       title: 'Episode 1',
+      overview: 'Walt cooks.',
       type: 'series_premiere',
       firstAired: '2008-01-21T02:00:00.000Z',
       runtime: 47,

@@ -4,6 +4,7 @@ import type { CatalogEpisode } from '../../shows/cache/ShowCatalog.ts';
 /** One episode chip under an open season. */
 export type ProgressEpisodeData = {
   readonly number: number;
+  readonly title?: string;
   readonly done: boolean;
   readonly plays: number;
   readonly minutesWatched: number;
@@ -20,6 +21,8 @@ export type ProgressSeasonData = {
   readonly minutesWatched: number;
   readonly minutesLeft: number;
   readonly episodes: readonly ProgressEpisodeData[];
+  /** Announced episodes that haven't aired yet, or have no air date. */
+  readonly upcoming: readonly { readonly number: number; readonly title?: string }[];
 };
 
 /** What only the show's catalog knows: read when the row is expanded. */

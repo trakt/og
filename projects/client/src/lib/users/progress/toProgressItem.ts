@@ -81,6 +81,7 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
     .filter(({ number }) => (number > 0 || includeSpecials) && !hiddenSeasons?.has(number))
     .map((season) => ({
       season,
+      upcoming: season.episodes.filter((episode) => !aired(episode)),
       episodes: season.episodes.filter(aired).map((episode): Episode => {
         const dates = kind === 'watched' ? watched?.get(season.number)?.get(episode.id) ?? [] : [];
         const added = collectedAt(collected?.get(season.number)?.get(episode.number));
@@ -89,6 +90,7 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
           episode,
           runtime,
           number: episode.number,
+          title: episode.title,
           done: kind === 'watched' ? dates.some((date) => !resetAt || date >= resetAt) : added !== undefined,
           plays: dates.length,
           minutesWatched: dates.length * runtime,
@@ -96,9 +98,9 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
         };
       }),
     }))
-    .filter(({ episodes }) => episodes.length > 0);
+    .filter(({ episodes, upcoming }) => episodes.length > 0 || upcoming.length > 0);
 
-  const toSeason = ({ season, episodes }: (typeof seasons)[number]): ProgressSeasonData => ({
+  const toSeason = ({ season, episodes, upcoming }: (typeof seasons)[number]): ProgressSeasonData => ({
     number: season.number,
     title: season.title,
     aired: episodes.length,
@@ -106,13 +108,15 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
     plays: sum(episodes.map(({ plays }) => plays)),
     minutesWatched: sum(episodes.map(({ minutesWatched }) => minutesWatched)),
     minutesLeft: sum(episodes.filter(({ done }) => !done).map(({ runtime }) => runtime)),
-    episodes: episodes.map(({ number, done, plays, minutesWatched, at }) => ({
+    episodes: episodes.map(({ number, title, done, plays, minutesWatched, at }) => ({
       number,
+      title,
       done,
       plays,
       minutesWatched,
       at,
     })),
+    upcoming: upcoming.map(({ number, title }) => ({ number, title })),
   });
 
   const all = seasons.flatMap(({ episodes }) => episodes);
